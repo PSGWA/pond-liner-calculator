@@ -185,13 +185,13 @@
                     const totalPrice = area * pricePerSquareMeter;
                     result += `ผ้าหนา ${sizeKey} มม. ราคา ${totalPrice.toLocaleString()} บาท\n\n`;
                 }
-                result += `จัดส่งฟรีเก็บเงินปลายทาง`;
+                result += `จัดส่งฟรีเก็บเงินปลายทางครับ`;
             } else {
                 const pricePerSquareMeter = priceList[size.value];
                 const totalPrice = area * pricePerSquareMeter;
 
                 result += `ผ้าหนา ${size.value} มม. ราคา ${totalPrice.toLocaleString()} บาท\n`;
-                result += `จัดส่งฟรีเก็บเงินปลายทาง`;
+                result += `จัดส่งฟรีเก็บเงินปลายทางครับ`;
             }
 
             document.getElementById('result').value = result;
