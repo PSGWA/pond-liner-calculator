@@ -177,21 +177,33 @@
             };
 
             const area = width * length;
-            let result = `${width.toFixed(0)}ม. × ${length.toFixed(0)} ม.\n`;
+            let result = `${width.toFixed(0)} ม. × ${length.toFixed(0)} ม.\n`;
+
+            const calculateShipping = (totalPrice) => {
+                if (totalPrice >= 10000) {
+                    return 0; // ส่งฟรี
+                } else {
+                    return Math.max(totalPrice * 0.1, 200); // ค่าส่ง 10% หรือขั้นต่ำ 200 บาท
+                }
+            };
 
             if (size.value === "all") {
                 // คำนวณสำหรับทุกความหนา
                 for (const [sizeKey, pricePerSquareMeter] of Object.entries(priceList)) {
                     const totalPrice = area * pricePerSquareMeter;
-                    result += `ผ้าหนา ${sizeKey} มม. ราคา ${totalPrice.toLocaleString()} บาท\n\n`;
+                    const shippingFee = calculateShipping(totalPrice);
+                    const finalPrice = totalPrice + shippingFee;
+                    result += `ผ้าหนา ${sizeKey} มม. ราคา ${finalPrice.toLocaleString()} บาท (ค่าส่ง ${shippingFee.toLocaleString()} บาท)\n\n`;
                 }
-                result += `จัดส่งฟรีเก็บเงินปลายทางครับ`;
+                result += `จัดส่งฟรีเก็บเงินปลายทางเมื่อยอดเกิน 10,000 บาท`;
             } else {
                 const pricePerSquareMeter = priceList[size.value];
                 const totalPrice = area * pricePerSquareMeter;
+                const shippingFee = calculateShipping(totalPrice);
+                const finalPrice = totalPrice + shippingFee;
 
-                result += `ผ้าหนา ${size.value} มม. ราคา ${totalPrice.toLocaleString()} บาท\n`;
-                result += `จัดส่งฟรีเก็บเงินปลายทางครับ`;
+                result += `ผ้าหนา ${size.value} มม. ราคา ${finalPrice.toLocaleString()} บาท (ค่าส่ง ${shippingFee.toLocaleString()} บาท)\n`;
+                result += `จัดส่งฟรีเก็บเงินปลายทางเมื่อยอดเกิน 10,000 บาท`;
             }
 
             document.getElementById('result').value = result;
