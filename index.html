@@ -188,23 +188,23 @@
             };
 
             if (size.value === "all") {
-                // คำนวณสำหรับทุกความหนา
-                for (const [sizeKey, pricePerSquareMeter] of Object.entries(priceList)) {
-                    const totalPrice = area * pricePerSquareMeter;
-                    const shippingFee = calculateShipping(totalPrice);
-                    const finalPrice = totalPrice + shippingFee;
-                    result += `ผ้าหนา ${sizeKey} มม. ราคา ${finalPrice.toLocaleString()} บาท (ค่าส่ง ${shippingFee.toLocaleString()} บาท)\n\n`;
-                }
-                result += `จัดส่งฟรีเก็บเงินปลายทางเมื่อยอดเกิน 10,000 บาท`;
-            } else {
-                const pricePerSquareMeter = priceList[size.value];
-                const totalPrice = area * pricePerSquareMeter;
-                const shippingFee = calculateShipping(totalPrice);
-                const finalPrice = totalPrice + shippingFee;
+    // คำนวณสำหรับทุกความหนา
+    for (const [sizeKey, pricePerSquareMeter] of Object.entries(priceList)) {
+        const totalPrice = area * pricePerSquareMeter;
+        const shippingFee = calculateShipping(totalPrice);
+        const finalPrice = totalPrice + shippingFee;
+        result += `ผ้าหนา ${sizeKey} มม. ราคา ${finalPrice.toLocaleString()} บาท\n\n`;
+    }
+    result += `ส่งฟรีเก็บเงินปลายทางครับ`;
+} else {
+    const pricePerSquareMeter = priceList[size.value];
+    const totalPrice = area * pricePerSquareMeter;
+    const shippingFee = calculateShipping(totalPrice);
+    const finalPrice = totalPrice + shippingFee;
 
-                result += `ผ้าหนา ${size.value} มม. ราคา ${finalPrice.toLocaleString()} บาท (ค่าส่ง ${shippingFee.toLocaleString()} บาท)\n`;
-                result += `จัดส่งฟรีเก็บเงินปลายทางเมื่อยอดเกิน 10,000 บาท`;
-            }
+    result += `ผ้าหนา ${size.value} มม. ราคา ${finalPrice.toLocaleString()} บาท\n`;
+    result += `ส่งฟรีเก็บเงินปลายทางครับ`;
+}
 
             document.getElementById('result').value = result;
             document.getElementById('copyButton').style.display = 'flex';
