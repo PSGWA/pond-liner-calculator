@@ -146,6 +146,9 @@
             <label for="length">ความยาว (เมตร):</label>
             <input type="number" id="length" step="0.01" placeholder="กรอกความยาว" required>
 
+            <label for="depth">ความลึก (เมตร, ไม่บังคับ):</label>
+            <input type="number" id="depth" step="0.01" placeholder="กรอกความลึก (ถ้ามี)">
+
             <button type="submit">คำนวณ</button>
             <button type="button" id="resetButton" style="display:none;">คำนวณใหม่</button>
         </form>
@@ -161,13 +164,20 @@
             e.preventDefault();
 
             const size = document.querySelector('input[name="size"]:checked');
-            const width = parseFloat(document.getElementById('width').value);
-            const length = parseFloat(document.getElementById('length').value);
+            let width = parseFloat(document.getElementById('width').value);
+            let length = parseFloat(document.getElementById('length').value);
+            const depth = parseFloat(document.getElementById('depth').value);
 
             // ตรวจสอบว่ากรอกข้อมูลครบถ้วน
             if (!size || width <= 0 || length <= 0) {
                 alert("กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง");
                 return false;
+            }
+
+            // ถ้ามีการกรอกความลึก ให้ปรับค่ากว้างและยาว
+            if (!isNaN(depth) && depth > 0) {
+                width = width + (depth * 2) + 2;
+                length = length + (depth * 2) + 2;
             }
 
             const priceList = {
@@ -178,6 +188,7 @@
 
             const area = width * length;
             let result = `${width.toFixed(0)} ม. × ${length.toFixed(0)} ม.\n`;
+            let hasLargeSizeOrWeight = false; // ตัวแปรสำหรับเช็คว่ามีขนาดเกินกำหนดหรือไม่
 
             const calculateShipping = (totalPrice) => {
                 if (totalPrice >= 10000) {
@@ -187,24 +198,51 @@
                 }
             };
 
-            if (size.value === "all") {
-    // คำนวณสำหรับทุกความหนา
-    for (const [sizeKey, pricePerSquareMeter] of Object.entries(priceList)) {
-        const totalPrice = area * pricePerSquareMeter;
-        const shippingFee = calculateShipping(totalPrice);
-        const finalPrice = totalPrice + shippingFee;
-        result += `ผ้าหนา ${sizeKey} มม. ราคา ${finalPrice.toLocaleString()} บาท\n\n`;
-    }
-    result += `ส่งฟรีเก็บเงินปลายทางครับ`;
-} else {
-    const pricePerSquareMeter = priceList[size.value];
-    const totalPrice = area * pricePerSquareMeter;
-    const shippingFee = calculateShipping(totalPrice);
-    const finalPrice = totalPrice + shippingFee;
+            const calculateWeight = (size, area) => {
+                const weightPerSquareMeter = {
+                    '0.3': 0.3,
+                    '0.5': 0.5,
+                    '0.75': 0.75
+                };
+                return weightPerSquareMeter[size] * area;
+            };
 
-    result += `ผ้าหนา ${size.value} มม. ราคา ${finalPrice.toLocaleString()} บาท\n`;
-    result += `ส่งฟรีเก็บเงินปลายทางครับ`;
-}
+            if (size.value === "all") {
+                // คำนวณสำหรับทุกความหนา
+                for (const [sizeKey, pricePerSquareMeter] of Object.entries(priceList)) {
+                    const totalPrice = area * pricePerSquareMeter;
+                    const shippingFee = calculateShipping(totalPrice);
+                    const finalPrice = totalPrice + shippingFee;
+                    result += `ผ้าหนา ${sizeKey} มม. ราคา ${finalPrice.toLocaleString()} บาท\n`;
+
+                    // คำนวณน้ำหนักและตรวจสอบเงื่อนไข
+                    const weight = calculateWeight(sizeKey, area);
+                    if (weight > 800 || width > 30 || length > 30) {
+                        hasLargeSizeOrWeight = true; // ถ้ามีขนาดเกินกำหนดหรือหนักเกิน
+                    }
+                }
+                result += `ส่งฟรีเก็บเงินปลายทาง`;
+
+                // หากมีเงื่อนไขน้ำหนักเกินหรือขนาดเกิน ให้แจ้งหมายเหตุเพียงครั้งเดียวตอนจบ
+                if (hasLargeSizeOrWeight) {
+                    result += "\n\nหมายเหตุ: เนื่องจากขนาดหรือความหนักของผ้าเกินขนาดปกติ โปรดแจ้งเบอร์ติดต่อสำหรับการจัดส่งพิเศษ";
+                }
+            } else {
+                const pricePerSquareMeter = priceList[size.value];
+                const totalPrice = area * pricePerSquareMeter;
+                const shippingFee = calculateShipping(totalPrice);
+                const finalPrice = totalPrice + shippingFee;
+
+                result += `ผ้าหนา ${size.value} มม. ราคา ${finalPrice.toLocaleString()} บาท\n`;
+
+                // คำนวณน้ำหนักและตรวจสอบเงื่อนไข
+                const weight = calculateWeight(size.value, area);
+                if (weight > 800 || width > 30 || length > 30) {
+                    result += "\n\nหมายเหตุ: เนื่องจากขนาดหรือความหนักของผ้าเกินขนาดปกติ โปรดแจ้งเบอร์ติดต่อสำหรับการจัดส่งพิเศษ";
+                }
+
+                result += `\nส่งฟรีเก็บเงินปลายทาง`;
+            }
 
             document.getElementById('result').value = result;
             document.getElementById('copyButton').style.display = 'flex';
