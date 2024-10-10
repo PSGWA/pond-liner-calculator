@@ -166,35 +166,51 @@
             const size = document.querySelector('input[name="size"]:checked');
             let width = parseFloat(document.getElementById('width').value);
             let length = parseFloat(document.getElementById('length').value);
-            const depth = parseFloat(document.getElementById('depth').value);
+            const depth = parseFloat(document.getElementById('depth').value || 0);
 
-            // ตรวจสอบว่ากรอกข้อมูลครบถ้วน
             if (!size || width <= 0 || length <= 0) {
                 alert("กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง");
                 return false;
             }
 
-            // ถ้ามีการกรอกความลึก ให้ปรับค่ากว้างและยาว
+            let originalWidth = width;
+            let originalLength = length;
+
+            let sizeInfoText = "";
+            let showAdjustedSize = false;
+
             if (!isNaN(depth) && depth > 0) {
                 width = width + (depth * 2) + 2;
                 length = length + (depth * 2) + 2;
+                sizeInfoText = "(ขนาดผ้านี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 1 เมตรแล้ว)";
+                showAdjustedSize = true;
+            } else {
+                sizeInfoText = "(ขนาดผ้าที่แจ้งนี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 1 เมตรแล้ว)";
             }
 
             const priceList = {
-                '0.3': 40,
-                '0.5': 60,
-                '0.75': 80
+                '0.3': { price: 40, material: 'LDPE' },
+                '0.5': { price: 60, material: 'HDPE' },
+                '0.75': { price: 80, material: 'HDPE' }
+            };
+
+            const formatNumber = (num) => {
+                return Number.isInteger(num) ? num.toFixed(0) : num.toFixed(2);
             };
 
             const area = width * length;
-            let result = `${width.toFixed(0)} ม. × ${length.toFixed(0)} ม.\n`;
-            let hasLargeSizeOrWeight = false; // ตัวแปรสำหรับเช็คว่ามีขนาดเกินกำหนดหรือไม่
+            let result = `ความกว้าง ${formatNumber(originalWidth)} ม. × ความยาว ${formatNumber(originalLength)} ม.\n`;
+            if (showAdjustedSize) {
+                result += `ผ้าขนาด ${formatNumber(width)} ม. × ${formatNumber(length)} ม.\n\n`;
+            }
+            let hasLargeSizeOrWeight = false;
+            let finalMessage = "";
 
             const calculateShipping = (totalPrice) => {
                 if (totalPrice >= 10000) {
-                    return 0; // ส่งฟรี
+                    return 0;
                 } else {
-                    return Math.max(totalPrice * 0.1, 200); // ค่าส่ง 10% หรือขั้นต่ำ 200 บาท
+                    return Math.max(totalPrice * 0.1, 200);
                 }
             };
 
@@ -208,41 +224,40 @@
             };
 
             if (size.value === "all") {
-                // คำนวณสำหรับทุกความหนา
-                for (const [sizeKey, pricePerSquareMeter] of Object.entries(priceList)) {
-                    const totalPrice = area * pricePerSquareMeter;
+                for (const [sizeKey, { price, material }] of Object.entries(priceList)) {
+                    const totalPrice = area * price;
                     const shippingFee = calculateShipping(totalPrice);
                     const finalPrice = totalPrice + shippingFee;
-                    result += `ผ้าหนา ${sizeKey} มม. ราคา ${finalPrice.toLocaleString()} บาท\n`;
+                    result += `ผ้าหนา ${sizeKey} มม. (${material} ${price}บาท/ตารางเมตร) ราคา ${finalPrice.toLocaleString()} บาท\n`;
 
-                    // คำนวณน้ำหนักและตรวจสอบเงื่อนไข
                     const weight = calculateWeight(sizeKey, area);
                     if (weight > 800 || width > 30 || length > 30) {
-                        hasLargeSizeOrWeight = true; // ถ้ามีขนาดเกินกำหนดหรือหนักเกิน
+                        hasLargeSizeOrWeight = true;
                     }
                 }
-                result += `ส่งฟรีเก็บเงินปลายทาง`;
 
-                // หากมีเงื่อนไขน้ำหนักเกินหรือขนาดเกิน ให้แจ้งหมายเหตุเพียงครั้งเดียวตอนจบ
+                finalMessage = "ส่งฟรีเก็บเงินปลายทางครับ";
                 if (hasLargeSizeOrWeight) {
                     result += "\n\nหมายเหตุ: เนื่องจากขนาดหรือความหนักของผ้าเกินขนาดปกติ โปรดแจ้งเบอร์ติดต่อสำหรับการจัดส่งพิเศษ";
                 }
             } else {
-                const pricePerSquareMeter = priceList[size.value];
-                const totalPrice = area * pricePerSquareMeter;
+                const { price, material } = priceList[size.value];
+                const totalPrice = area * price;
                 const shippingFee = calculateShipping(totalPrice);
                 const finalPrice = totalPrice + shippingFee;
 
-                result += `ผ้าหนา ${size.value} มม. ราคา ${finalPrice.toLocaleString()} บาท\n`;
+                result += `ผ้าพลาสติก ${material} หนา ${size.value} มม. (${price}บาท/ตารางเมตร)\n${sizeInfoText}\nราคา ${finalPrice.toLocaleString()} บาท\n`;
 
-                // คำนวณน้ำหนักและตรวจสอบเงื่อนไข
                 const weight = calculateWeight(size.value, area);
                 if (weight > 800 || width > 30 || length > 30) {
                     result += "\n\nหมายเหตุ: เนื่องจากขนาดหรือความหนักของผ้าเกินขนาดปกติ โปรดแจ้งเบอร์ติดต่อสำหรับการจัดส่งพิเศษ";
                 }
 
-                result += `\nส่งฟรีเก็บเงินปลายทาง`;
+                // ถ้าราคาสินค้าไม่ถึง 10,000 บาท ให้สรุปว่า "รวมส่งเก็บเงินปลายทาง"
+                finalMessage = totalPrice >= 10000 ? "ส่งฟรีเก็บเงินปลายทางครับ" : "รวมส่งเก็บเงินปลายทางครับ";
             }
+
+            result += `\n${finalMessage}\nขอบคุณครับ`;
 
             document.getElementById('result').value = result;
             document.getElementById('copyButton').style.display = 'flex';
