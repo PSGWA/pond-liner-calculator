@@ -224,7 +224,7 @@
             if (size.value === "all") {
                 result += `ขนาด ${formatNumber(originalWidth)} ม. × ${formatNumber(originalLength)} ม.${depth ? ` ลึก ${depth} ม.` : ""}\n`;
                 if (showAdjustedSize) {
-                    result += `ผ้าขนาด ${formatNumber(width)} ม. × ${formatNumber(length)} ม.\n`;
+                    result += `= ผ้าขนาด ${formatNumber(width)} ม. × ${formatNumber(length)} ม.\n`;
                 }
                 result += `${sizeInfoText}\n\n`;
 
@@ -258,7 +258,7 @@
                 result += `ผ้าพลาสติก ${material} หนา ${size.value} มม. (${price}บาท/ตร.ม.)\n`;
                 result += `ขนาด ${formatNumber(originalWidth)} ม. × ${formatNumber(originalLength)} ม.${depth ? ` ลึก ${depth} ม.` : ""}\n`;
                 if (showAdjustedSize) {
-                    result += `ผ้าขนาด ${formatNumber(width)} ม. × ${formatNumber(length)} ม.\n\n`;
+                    result += `= ผ้าขนาด ${formatNumber(width)} ม. × ${formatNumber(length)} ม.\n\n`;
                 }
                 result += `${sizeInfoText}\nราคา ${finalPrice.toLocaleString()} บาท\n`;
 
