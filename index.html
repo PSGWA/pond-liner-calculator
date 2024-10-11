@@ -202,6 +202,7 @@
             let result = "";
             let hasLargeSizeOrWeight = false;
             let finalMessage = "";
+            let minPriceUnder10000 = false;  // ตรวจสอบว่าราคาของความหนา 0.3 ต่ำกว่า 10000 หรือไม่
 
             const calculateShipping = (totalPrice) => {
                 if (totalPrice >= 10000) {
@@ -237,9 +238,14 @@
                     if (weight > 800 || width > 30 || length > 30) {
                         hasLargeSizeOrWeight = true;
                     }
+
+                    // ตรวจสอบว่าราคา 0.3 ต่ำกว่า 10000 หรือไม่
+                    if (sizeKey === '0.3' && finalPrice < 10000) {
+                        minPriceUnder10000 = true;
+                    }
                 }
 
-                finalMessage = "ส่งฟรีเก็บเงินปลายทางครับ";
+                finalMessage = minPriceUnder10000 ? "รวมค่าส่งเก็บเงินปลายทางครับ" : "ส่งฟรีเก็บเงินปลายทางครับ";
                 if (hasLargeSizeOrWeight) {
                     result += "\nหมายเหตุ: เนื่องจากขนาดหรือความหนักของผ้าเกินขนาดปกติ โปรดแจ้งเบอร์ติดต่อสำหรับการจัดส่งพิเศษ";
                 }
@@ -262,7 +268,7 @@
                 }
 
                 // ถ้าราคาสินค้าไม่ถึง 10,000 บาท ให้สรุปว่า "รวมส่งเก็บเงินปลายทาง"
-                finalMessage = totalPrice >= 10000 ? "ส่งฟรีเก็บเงินปลายทางครับ" : "รวมส่งเก็บเงินปลายทางครับ";
+                finalMessage = totalPrice >= 10000 ? "ส่งฟรีเก็บเงินปลายทางครับ" : "รวมค่าส่งเก็บเงินปลายทางครับ";
             }
 
             result += `\n${finalMessage}\nขอบคุณครับ`;
