@@ -221,7 +221,11 @@
             };
 
             if (size.value === "all") {
-                result += `ขนาด ${formatNumber(originalWidth)} ม. × ${formatNumber(originalLength)} ม.\n${sizeInfoText}\n\n`;
+                result += `ขนาด ${formatNumber(originalWidth)} ม. × ${formatNumber(originalLength)} ม.${depth ? ` ลึก ${depth} ม.` : ""}\n`;
+                if (showAdjustedSize) {
+                    result += `ผ้าขนาด ${formatNumber(width)} ม. × ${formatNumber(length)} ม.\n`;
+                }
+                result += `${sizeInfoText}\n\n`;
 
                 for (const [sizeKey, { price, material }] of Object.entries(priceList)) {
                     const totalPrice = area * price;
