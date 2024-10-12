@@ -201,74 +201,37 @@
             const area = width * length;
             let result = "";
             let hasLargeSizeOrWeight = false;
-            let finalMessage = "";
-            let minPriceUnder10000 = false;  // ตรวจสอบว่าราคาของความหนา 0.3 ต่ำกว่า 10000 หรือไม่
-
-            const calculateShipping = (totalPrice) => {
-                if (totalPrice >= 10000) {
-                    return 0;
-                } else {
-                    return Math.max(totalPrice * 0.1, 200);
-                }
-            };
-
-            const calculateWeight = (size, area) => {
-                const weightPerSquareMeter = {
-                    '0.3': 0.3,
-                    '0.5': 0.5,
-                    '0.75': 0.75
-                };
-                return weightPerSquareMeter[size] * area;
-            };
+            let finalMessage = "ส่งฟรีเก็บเงินปลายทางครับ";  // ข้อความที่ใช้สำหรับทุกกรณี
 
             if (size.value === "all") {
                 result += `ขนาด ${formatNumber(originalWidth)} ม. × ${formatNumber(originalLength)} ม.${depth ? ` ลึก ${depth} ม.` : ""}\n`;
                 if (showAdjustedSize) {
-                    result += `= ผ้าขนาด ${formatNumber(width)} ม. × ${formatNumber(length)} ม.\n`;
+                    result += `ผ้าขนาด ${formatNumber(width)} ม. × ${formatNumber(length)} ม.\n`;
                 }
                 result += `${sizeInfoText}\n\n`;
 
                 for (const [sizeKey, { price, material }] of Object.entries(priceList)) {
                     const totalPrice = area * price;
-                    const shippingFee = calculateShipping(totalPrice);
-                    const finalPrice = totalPrice + shippingFee;
-                    result += `ผ้าพลาสติก ${material} หนา ${sizeKey} มม. (${price}บาท/ตร.ม.) = ${finalPrice.toLocaleString()} บาท\n`;
-
-                    const weight = calculateWeight(sizeKey, area);
-                    if (weight > 800 || width > 30 || length > 30) {
-                        hasLargeSizeOrWeight = true;
-                    }
-
-                    // ตรวจสอบว่าราคา 0.3 ต่ำกว่า 10000 หรือไม่
-                    if (sizeKey === '0.3' && finalPrice < 10000) {
-                        minPriceUnder10000 = true;
-                    }
+                    result += `ผ้าพลาสติก ${material} หนา ${sizeKey} มม. (${price}บาท/ตร.ม.) = ${totalPrice.toLocaleString()} บาท\n`;
                 }
 
-                finalMessage = minPriceUnder10000 ? "รวมค่าส่งเก็บเงินปลายทางครับ" : "ส่งฟรีเก็บเงินปลายทางครับ";
                 if (hasLargeSizeOrWeight) {
                     result += "\nหมายเหตุ: เนื่องจากขนาดหรือความหนักของผ้าเกินขนาดปกติ โปรดแจ้งเบอร์ติดต่อสำหรับการจัดส่งพิเศษ";
                 }
             } else {
                 const { price, material } = priceList[size.value];
                 const totalPrice = area * price;
-                const shippingFee = calculateShipping(totalPrice);
-                const finalPrice = totalPrice + shippingFee;
 
                 result += `ผ้าพลาสติก ${material} หนา ${size.value} มม. (${price}บาท/ตร.ม.)\n`;
                 result += `ขนาด ${formatNumber(originalWidth)} ม. × ${formatNumber(originalLength)} ม.${depth ? ` ลึก ${depth} ม.` : ""}\n`;
                 if (showAdjustedSize) {
-                    result += `= ผ้าขนาด ${formatNumber(width)} ม. × ${formatNumber(length)} ม.\n\n`;
+                    result += `ผ้าขนาด ${formatNumber(width)} ม. × ${formatNumber(length)} ม.\n\n`;
                 }
-                result += `${sizeInfoText}\nราคา ${finalPrice.toLocaleString()} บาท\n`;
+                result += `${sizeInfoText}\nราคา ${totalPrice.toLocaleString()} บาท\n`;
 
-                const weight = calculateWeight(size.value, area);
-                if (weight > 800 || width > 30 || length > 30) {
+                if (hasLargeSizeOrWeight) {
                     result += "\nหมายเหตุ: เนื่องจากขนาดหรือความหนักของผ้าเกินขนาดปกติ โปรดแจ้งเบอร์ติดต่อสำหรับการจัดส่งพิเศษ";
                 }
-
-                // ถ้าราคาสินค้าไม่ถึง 10,000 บาท ให้สรุปว่า "รวมส่งเก็บเงินปลายทาง"
-                finalMessage = totalPrice >= 10000 ? "ส่งฟรีเก็บเงินปลายทางครับ" : "รวมค่าส่งเก็บเงินปลายทางครับ";
             }
 
             result += `\n${finalMessage}\nขอบคุณครับ`;
