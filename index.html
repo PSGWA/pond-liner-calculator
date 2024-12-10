@@ -79,7 +79,6 @@
             background-color: #f1f1f1;
         }
 
-        /* ปุ่มคัดลอกข้อความ สีฟ้าและมีไอคอน */
         #copyButton {
             background-color: #007bff;
             color: white;
@@ -93,7 +92,6 @@
             font-size: 18px;
         }
 
-        /* ปุ่มคำนวณใหม่ สีเหลือง */
         #resetButton {
             background-color: #ffc107;
             color: black;
@@ -124,11 +122,9 @@
         }
     </style>
 
-    <!-- Font Awesome สำหรับไอคอน -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-
     <div class="container">
         <h1>คำนวณค่า ผ้าปูบ่อ</h1>
         <form id="calcForm">
@@ -200,8 +196,7 @@
 
             const area = width * length;
             let result = "";
-            let hasLargeSizeOrWeight = false;
-            let finalMessage = "ส่งฟรีเก็บเงินปลายทางครับ";  // ข้อความที่ใช้สำหรับทุกกรณี
+            let totalPrice = 0;
 
             if (size.value === "all") {
                 result += `ขนาด ${formatNumber(originalWidth)} ม. × ${formatNumber(originalLength)} ม.${depth ? ` ลึก ${depth} ม.` : ""}\n`;
@@ -211,16 +206,12 @@
                 result += `${sizeInfoText}\n\n`;
 
                 for (const [sizeKey, { price, material }] of Object.entries(priceList)) {
-                    const totalPrice = area * price;
-                    result += `ผ้าพลาสติก ${material} หนา ${sizeKey} มม. (${price}บาท/ตร.ม.) = ${totalPrice.toLocaleString()} บาท\n`;
-                }
-
-                if (hasLargeSizeOrWeight) {
-                    result += "\nหมายเหตุ: เนื่องจากขนาดหรือความหนักของผ้าเกินขนาดปกติ โปรดแจ้งเบอร์ติดต่อสำหรับการจัดส่งพิเศษ";
+                    const currentPrice = area * price;
+                    result += `ผ้าพลาสติก ${material} หนา ${sizeKey} มม. (${price}บาท/ตร.ม.) = ${currentPrice.toLocaleString()} บาท\n`;
                 }
             } else {
                 const { price, material } = priceList[size.value];
-                const totalPrice = area * price;
+                totalPrice = area * price;
 
                 result += `ผ้าพลาสติก ${material} หนา ${size.value} มม. (${price}บาท/ตร.ม.)\n`;
                 result += `ขนาด ${formatNumber(originalWidth)} ม. × ${formatNumber(originalLength)} ม.${depth ? ` ลึก ${depth} ม.` : ""}\n`;
@@ -229,19 +220,24 @@
                 }
                 result += `${sizeInfoText}\nราคา ${totalPrice.toLocaleString()} บาท\n`;
 
-                if (hasLargeSizeOrWeight) {
-                    result += "\nหมายเหตุ: เนื่องจากขนาดหรือความหนักของผ้าเกินขนาดปกติ โปรดแจ้งเบอร์ติดต่อสำหรับการจัดส่งพิเศษ";
+                if (totalPrice < 3000) {
+                    const shippingCost = 300;
+                    result += `\nค่าจัดส่ง ${shippingCost.toLocaleString()} บาท`;
+                    totalPrice += shippingCost;
+                } else {
+                    result += `\nส่งฟรี ชำระเงินเมื่อได้รับของครับ`;
                 }
+
+                result += `\n\nยอดรวมทั้งหมด = ${totalPrice.toLocaleString()} บาท`;
             }
 
-            result += `\n${finalMessage}\nยื่นยันการสั่งซื้อ แจ้งชื่อที่อยู่ และเบอร์โทรศัพท์ได้เลยนะครับ 2-5 วันสินค้าถึงครับ`;
+            result += `\nยื่นยันการสั่งซื้อ แจ้งชื่อที่อยู่ และเบอร์โทรศัพท์ได้เลยนะครับ 2-5 วันสินค้าถึงครับ`;
 
             document.getElementById('result').value = result;
             document.getElementById('copyButton').style.display = 'flex';
             document.getElementById('resetButton').style.display = 'block';
         };
 
-        // ฟังก์ชันคัดลอกผลลัพธ์
         document.getElementById('copyButton').onclick = function() {
             const resultText = document.getElementById('result');
             resultText.select();
@@ -249,7 +245,6 @@
             alert("คัดลอกข้อความแล้ว");
         };
 
-        // ฟังก์ชันรีเซ็ตฟอร์ม
         document.getElementById('resetButton').onclick = function() {
             document.getElementById('calcForm').reset();
             document.getElementById('result').value = '';
@@ -257,6 +252,5 @@
             document.getElementById('resetButton').style.display = 'none';
         };
     </script>
-
 </body>
 </html>
