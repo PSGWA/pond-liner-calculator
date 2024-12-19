@@ -174,6 +174,7 @@
 
             let sizeInfoText = "";
             let showAdjustedSize = false;
+	    
 
             if (!isNaN(depth) && depth > 0) {
                 width = width + (depth * 2) + 2;
@@ -197,6 +198,7 @@
             const area = width * length;
             let result = "";
             let totalPrice = 0;
+	    let deposit = 0 ;
 
             if (size.value === "all") {
                 result += `ขนาด ${formatNumber(originalWidth)} ม. × ${formatNumber(originalLength)} ม.${depth ? ` ลึก ${depth} ม.` : ""}\n`;
@@ -230,9 +232,14 @@
 
                 result += `\n\nยอดรวมทั้งหมด = ${totalPrice.toLocaleString()} บาท`;
             }
-
-            result += `\nยื่นยันการสั่งซื้อ แจ้งชื่อที่อยู่ และเบอร์โทรศัพท์ได้เลยนะครับ 6-8 วันสินค้าถึงครับ`;
-
+		result += `\nกรุณาตรวจสอบรายการสั่งซื้อให้ครบถ้วนก่อนยืนยันสินค้า เนื่องจากเมื่อเริ่มผลิตแล้วจะไม่สามารถยกเลิกหรือแก้ไขออเดอร์ได้`;
+            if (totalPrice >= 5000) {
+		deposit = totalPrice*0.1 ;
+                result += `\nโปรดชำระมัดจำ 10% (${deposit.toLocaleString()} บาท) พร้อมแจ้งชื่อ-ที่อยู่ และเบอร์โทรศัพท์ สินค้าจะจัดส่งถึงคุณภายใน 6-8 วันครับ`;
+            } else {
+            result += `\nยืนยันการสั่งซื้อ กรุณาแจ้งชื่อ-ที่อยู่ และเบอร์โทรศัพท์ สินค้าจะจัดส่งถึงคุณภายใน 6-8 วันครับ`;
+            }
+            
             document.getElementById('result').value = result;
             document.getElementById('copyButton').style.display = 'flex';
             document.getElementById('resetButton').style.display = 'block';
