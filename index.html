@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>คำนวณค่า ผ้าปูบ่อ</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>คำนวณผ้าปูบ่อ & บ่อกลม</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,41 +11,58 @@
             margin: 0;
             padding: 0;
         }
-
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            transition: background-color 0.3s;
+        }
+        .tab:hover {
+            background-color: #ddd;
+        }
+        .tab.active {
+            background-color: #fff;
+            border-bottom: 2px solid #28a745;
+        }
         .container {
             max-width: 600px;
-            margin: 20px auto;
+            margin: 0 auto;
             padding: 20px;
             background-color: #fff;
             border-radius: 10px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
         }
-
         h1 {
             text-align: center;
             color: #333;
             margin-bottom: 20px;
             font-size: 24px;
         }
-
         label {
             display: block;
             margin-bottom: 10px;
             color: #555;
             font-size: 16px;
         }
-
         input[type="radio"] {
             margin-right: 10px;
         }
-
         .radio-group {
             display: flex;
-            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
             margin-bottom: 20px;
         }
-
-        input[type="number"], button {
+        input[type="number"], select, button {
             width: 100%;
             padding: 12px;
             margin-bottom: 20px;
@@ -54,7 +71,6 @@
             box-sizing: border-box;
             font-size: 16px;
         }
-
         button {
             background-color: #28a745;
             color: white;
@@ -62,11 +78,9 @@
             cursor: pointer;
             font-size: 18px;
         }
-
         button:hover {
             background-color: #218838;
         }
-
         textarea {
             width: 100%;
             padding: 10px;
@@ -78,186 +92,499 @@
             resize: none;
             background-color: #f1f1f1;
         }
-
-        #copyButton {
-            background-color: #007bff;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+        .hidden {
+            display: none;
         }
+        #pondCopy, #canalCopy, #circularCopy {
+    background-color: #007bff;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+    padding: 8px 16px;
+}
 
         #copyButton i {
             font-size: 18px;
         }
-
         #resetButton {
             background-color: #ffc107;
             color: black;
         }
-
         #resetButton:hover {
             background-color: #e0a800;
         }
-
         @media (max-width: 600px) {
             h1 {
                 font-size: 20px;
             }
-
             label {
                 font-size: 14px;
             }
-
-            input[type="number"], button {
+            input[type="number"], button, select {
                 font-size: 14px;
                 padding: 10px;
             }
-
             textarea {
                 font-size: 14px;
                 height: 120px;
             }
         }
     </style>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>คำนวณค่า ผ้าปูบ่อ</h1>
-        <form id="calcForm">
+    <h1>คำนวณค่า ผ้าปูบ่อ / คลองไส้ไก่ / บ่อกลม</h1>
+    <div class="tabs">
+        <div class="tab active" data-tab="pond">บ่อขุด</div>
+        <div class="tab" data-tab="canal">คลองไส้ไก่</div>
+        <div class="tab" data-tab="circular">บ่อกลม</div>
+    </div>
+
+    <div class="container" id="pondContainer">
+        <form id="pondForm">
             <label for="size">เลือกความหนา (มม.):</label>
             <div class="radio-group">
-                <label><input type="radio" name="size" value="0.3"> 0.3 มม.</label>
-		<label><input type="radio" name="size" value="0.5"> 0.5 มม.</label>
-		<label><input type="radio" name="size" value="0.75"> 0.75 มม.</label>
-                <label><input type="radio" name="size" value="all"> ไม่ระบุความหนา</label>
+                <label><input type="radio" name="size" value="0.3" required> 0.3 มม.</label>
+                <label><input type="radio" name="size" value="0.5" required> 0.5 มม.</label>
+                <label><input type="radio" name="size" value="0.75" required> 0.75 มม.</label>
+                <label><input type="radio" name="size" value="all" required> ไม่ระบุความหนา</label>
             </div>
 
             <label for="width">ความกว้าง (เมตร):</label>
-            <input type="number" id="width" step="0.01" placeholder="กรอกความกว้าง" required>
+            <input type="number" id="pondWidth" step="0.01" placeholder="กรอกความกว้าง" required>
 
             <label for="length">ความยาว (เมตร):</label>
-            <input type="number" id="length" step="0.01" placeholder="กรอกความยาว" required>
+            <input type="number" id="pondLength" step="0.01" placeholder="กรอกความยาว" required>
 
             <label for="depth">ความลึก (เมตร, ไม่บังคับ):</label>
-            <input type="number" id="depth" step="0.01" placeholder="กรอกความลึก (ถ้ามี)">
+            <input type="number" id="pondDepth" step="0.01" placeholder="กรอกความลึก (ถ้ามี)">
 
             <button type="submit">คำนวณ</button>
-            <button type="button" id="resetButton" style="display:none;">คำนวณใหม่</button>
+            <button type="button" id="pondReset" style="display:none;">คำนวณใหม่</button>
         </form>
 
-        <textarea id="result" readonly placeholder="ผลลัพธ์จะแสดงที่นี่"></textarea>
-        <button id="copyButton" style="display:none;">
+        <textarea id="pondResult" readonly placeholder="ผลลัพธ์จะแสดงที่นี่"></textarea>
+        <button id="pondCopy" style="display:none;">
+            <i class="fas fa-copy"></i> คัดลอกข้อความ
+        </button>
+    </div>
+
+    <div class="container hidden" id="canalContainer">
+        <form id="canalForm">
+            <label for="size">เลือกความหนา (มม.):</label>
+            <div class="radio-group">
+                <label><input type="radio" name="canalSize" value="0.5" required> 0.5 มม.</label>
+            </div>
+
+            <label for="width">ความกว้าง (เมตร):</label>
+            <input type="number" id="canalWidth" step="0.01" placeholder="กรอกความกว้าง" required>
+
+            <label for="length">ความยาว (เมตร):</label>
+            <input type="number" id="canalLength" step="0.01" placeholder="กรอกความยาว" required>
+
+            <label for="depth">ความลึก (เมตร, ไม่บังคับ):</label>
+            <input type="number" id="canalDepth" step="0.01" placeholder="กรอกความลึก (ถ้ามี)">
+
+            <button type="submit">คำนวณ</button>
+            <button type="button" id="canalReset" style="display:none;">คำนวณใหม่</button>
+        </form>
+
+        <textarea id="canalResult" readonly placeholder="ผลลัพธ์จะแสดงที่นี่"></textarea>
+        <button id="canalCopy" style="display:none;">
+            <i class="fas fa-copy"></i> คัดลอกข้อความ
+        </button>
+    </div>
+
+    <div class="container hidden" id="circularContainer">
+        <form id="circularForm">
+            <label>เลือกเส้นผ่านศูนย์กลาง (เมตร):</label>
+            <div class="radio-group">
+                <label><input type="radio" name="circleDiameter" value="6" required> 6 เมตร</label>
+                <label><input type="radio" name="circleDiameter" value="8" required> 8 เมตร</label>
+                <label><input type="radio" name="circleDiameter" value="10" required> 10 เมตร</label>
+                <label><input type="radio" name="circleDiameter" value="12" required> 12 เมตร</label>
+            </div>
+
+            <button type="submit">แสดงข้อมูล</button>
+            <button type="button" id="circularReset" style="display:none;">เริ่มใหม่</button>
+        </form>
+
+        <textarea id="circularResult" readonly placeholder="ผลลัพธ์จะแสดงที่นี่"></textarea>
+        <button id="circularCopy" style="display:none;">
             <i class="fas fa-copy"></i> คัดลอกข้อความ
         </button>
     </div>
 
     <script>
-        document.getElementById('calcForm').onsubmit = function(e) {
+        console.log("[DEBUG] Script started.");
+        const tabs = document.querySelectorAll('.tab');
+        const pondContainer = document.getElementById('pondContainer');
+        const canalContainer = document.getElementById('canalContainer');
+        const circularContainer = document.getElementById('circularContainer');
+        console.log("[DEBUG] Tabs, containers selected.");
+
+        tabs.forEach((tab) => {
+            tab.addEventListener('click', () => {
+                console.log(`[DEBUG] Tab clicked: ${tab.getAttribute('data-tab')}`);
+                tabs.forEach((t) => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                pondContainer.classList.add('hidden');
+                canalContainer.classList.add('hidden');
+                circularContainer.classList.add('hidden');
+
+                const target = tab.getAttribute('data-tab');
+                if (target === 'pond') {
+                    pondContainer.classList.remove('hidden');
+                } else if (target === 'canal') {
+                    canalContainer.classList.remove('hidden');
+                } else {
+                    circularContainer.classList.remove('hidden');
+                }
+            });
+        });
+
+        const pondForm = document.getElementById('pondForm');
+        const pondWidth = document.getElementById('pondWidth');
+        const pondLength = document.getElementById('pondLength');
+        const pondDepth = document.getElementById('pondDepth');
+        const pondResult = document.getElementById('pondResult');
+        const pondCopy = document.getElementById('pondCopy');
+        const pondReset = document.getElementById('pondReset');
+
+        pondForm.onsubmit = function(e) {
             e.preventDefault();
+            console.log("[DEBUG] Pond form submitted.");
 
             const size = document.querySelector('input[name="size"]:checked');
-            let width = parseFloat(document.getElementById('width').value);
-            let length = parseFloat(document.getElementById('length').value);
-            const depth = parseFloat(document.getElementById('depth').value || 0);
+            let widthVal = parseFloat(pondWidth.value);
+            let lengthVal = parseFloat(pondLength.value);
+            const depthVal = parseFloat(pondDepth.value || 0);
+            console.log(`[DEBUG] Pond input => size: ${size ? size.value : 'none'}, width: ${widthVal}, length: ${lengthVal}, depth: ${depthVal}`);
 
-            if (!size || width <= 0 || length <= 0) {
+            if (!size || widthVal <= 0 || lengthVal <= 0) {
                 alert("กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง");
+                console.log("[DEBUG] Pond form validation failed.");
                 return false;
             }
 
-            let originalWidth = width;
-            let originalLength = length;
+            let originalWidth = widthVal;
+            let originalLength = lengthVal;
 
-            let sizeInfoText = "";
-            let showAdjustedSize = false;
-	    
-
-            if (!isNaN(depth) && depth > 0) {
-                width = width + (depth * 2) + 2;
-                length = length + (depth * 2) + 2;
-                sizeInfoText = "(ขนาดผ้านี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 1 เมตรแล้ว)";
-                showAdjustedSize = true;
-            } else {
-                sizeInfoText = "(ขนาดผ้าที่แจ้งนี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 1 เมตรแล้ว)";
+            if (!isNaN(depthVal) && depthVal > 0) {
+                widthVal = widthVal + (depthVal * 2) + 2;
+                lengthVal = lengthVal + (depthVal * 2) + 2;
+                console.log(`[DEBUG] Pond adjusted for depth => widthVal: ${widthVal}, lengthVal: ${lengthVal}`);
             }
 
-            const priceList = {
+            const priceListPond = {
                 '0.3': { price: 50, material: 'LDPE' },
                 '0.5': { price: 65, material: 'HDPE' },
                 '0.75': { price: 85, material: 'HDPE' }
+            };
+            const area = widthVal * lengthVal;
+            let totalPrice = 0;
+
+            const formatNumber = (num) => {
+                return Number.isInteger(num) ? num.toFixed(0) : num.toFixed(2);
+            };
+
+            let resultText = "";
+
+            if (size.value === "all") {
+                console.log("[DEBUG] Pond size => ALL");
+                let subPrice03 = area * 50;
+                let subPrice05 = area * 65;
+                let subPrice075 = area * 85;
+
+                resultText = `จากขนาดที่ลูกค้าแจ้งมา ราคาดังนี้ครับ\n` +
+                    `✅ LDPE หนา 0.3 มม. – ${subPrice03.toLocaleString()} บาท (50 บาท/ตร.ม.)\n` +
+                    `✅ HDPE หนา 0.5 มม. – ${subPrice05.toLocaleString()} บาท (65 บาท/ตร.ม.)\n` +
+                    `✅ HDPE หนา 0.75 มม. – ${subPrice075.toLocaleString()} บาท (85 บาท/ตร.ม.)\n\n` +
+                    `เรามี 3 ความหนาให้เลือกครับ ✨\n` +
+                    `ยิ่งหนา ยิ่งทนทาน ต่อสภาพแวดล้อมรุนแรงและพื้นผิวขรุขระ \n\n` +
+                    `สนใจความหนาไหนแจ้งได้เลยครับ😊`;
+            } else {
+                console.log(`[DEBUG] Pond size => ${size.value}`);
+                const sel = priceListPond[size.value];
+                totalPrice = area * sel.price;
+
+                let shipFee = 0;
+                if (totalPrice < 3000) {
+                    shipFee = 300;
+                }
+                let sum = totalPrice + shipFee;
+
+                let shipText = "";
+                if (shipFee > 0) {
+                    shipText += `\n(มีค่าส่ง 300 บาท เพราะยอดต่ำกว่า 3,000 บาท)`;
+                } else {
+                    shipText += `\n(ส่งฟรี ชำระเงินเมื่อได้รับของครับ)`;
+                }
+
+                resultText += `📌 สรุปยอดสั่งซื้อทั้งหมด: ${sum.toLocaleString()} บาท\n`;
+                resultText += `รบกวนลูกค้าตรวจสอบรายการให้ครบก่อนยืนยันนะครับ ✨\n`;
+                resultText += `หากเริ่มผลิตแล้ว จะไม่สามารถแก้ไขหรือยกเลิกได้ครับ\n\n`;
+                resultText += `📍 รายการ:\n`;
+                resultText += `ผ้าพลาสติก ${sel.material} หนา ${size.value} มม. (${sel.price} บาท/ตร.ม.)\n`;
+                resultText += `ขนาด ${formatNumber(originalWidth)} ม. × ${formatNumber(originalLength)} ม.${depthVal > 0 ? ` ลึก ${depthVal} ม.` : ""} = ${area.toLocaleString()} ตร.ม. \n`;
+                resultText += `(ขนาดผ้าที่แจ้งนี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 1 เมตรแล้ว)\n`;
+                if (shipFee > 0) {
+                    resultText += `ราคาผ้า ${totalPrice.toLocaleString()} บาท\n`;
+                    resultText += `ค่าจัดส่ง 300 บาท\n`;
+                }
+                resultText += `ยอดรวม ${sum.toLocaleString()} บาท\n`;
+                resultText += shipText + "\n\n";
+
+                if (sum >= 5000) {
+                    let deposit = sum * 0.1;
+                    let balance = sum - deposit;
+                    resultText += `✅ ชำระมัดจำ 10% (${deposit.toLocaleString()} บาท) เพื่อยืนยันคำสั้งซื้อ\n`;
+                    resultText += `💳 ธนาคารกสิกรไทย เลขบัญชี 188-8-59993-9\n`;
+                    resultText += `🏢 บริษัท มนูธรรม พลาสติก จำกัด\n`;
+                    resultText += `📢 บริษัทมีบัญชีเดียว เพื่อความถูกต้องดูชื่อก่อนโอนทุกครั้งนะครับ 💚\n`;
+                    resultText += `\n📦 แจ้งชื่อ-ที่อยู่ & เบอร์โทรศัพท์\n`;
+                    resultText += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 2-4 วัน\n`;
+                    resultText += `ส่วนที่เหลือ ${balance.toLocaleString()} บาท โอนเมื่อได้รับของครับ 😉\n`;
+                } else {
+                    resultText += `ยืนยันการสั่งซื้อแล้วแจ้งชื่อ-ที่อยู่ & เบอร์โทรศัพท์ครับ\n`;
+                    resultText += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 2-4 วัน\n`;
+                    resultText += `หากมีคำถามเพิ่มเติม ปรึกษาได้ตลอด ยินดีให้บริการครับ 💕`;
+                }
+            }
+
+            console.log(`[DEBUG] Pond result => ${resultText}`);
+            pondResult.value = resultText.trim();
+            pondCopy.style.display = 'flex';
+            pondReset.style.display = 'block';
+        };
+
+        pondCopy.onclick = function() {
+            console.log("[DEBUG] Pond copy clicked.");
+            pondResult.select();
+            document.execCommand('copy');
+            alert("คัดลอกข้อความแล้ว");
+        };
+
+        pondReset.onclick = function() {
+            console.log("[DEBUG] Pond reset clicked.");
+            pondForm.reset();
+            pondResult.value = '';
+            pondCopy.style.display = 'none';
+            pondReset.style.display = 'none';
+        };
+
+        const canalForm = document.getElementById('canalForm');
+        const canalWidth = document.getElementById('canalWidth');
+        const canalLength = document.getElementById('canalLength');
+        const canalDepth = document.getElementById('canalDepth');
+        const canalResult = document.getElementById('canalResult');
+        const canalCopy = document.getElementById('canalCopy');
+        const canalReset = document.getElementById('canalReset');
+        const canalSizeRadios = document.querySelectorAll('input[name="canalSize"]');
+
+        canalSizeRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                console.log(`[DEBUG] Canal size changed => ${radio.value}`);
+                if(radio.value === '0.5') {
+                    canalWidth.value = 4;
+                    canalWidth.disabled = true;
+                } else {
+                    canalWidth.disabled = false;
+                }
+            });
+        });
+
+        canalForm.onsubmit = function(e) {
+            e.preventDefault();
+            console.log("[DEBUG] Canal form submitted.");
+
+            const size = document.querySelector('input[name="canalSize"]:checked');
+            let widthVal = parseFloat(canalWidth.value);
+            let lengthVal = parseFloat(canalLength.value);
+            const depthVal = parseFloat(canalDepth.value || 0);
+
+            console.log(`[DEBUG] Canal input => size: ${size ? size.value : 'none'}, width: ${widthVal}, length: ${lengthVal}, depth: ${depthVal}`);
+
+            if (!size || widthVal <= 0 || lengthVal <= 0) {
+                alert("กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง");
+                console.log("[DEBUG] Canal form validation failed.");
+                return false;
+            }
+
+            let originalWidth = widthVal;
+            let originalLength = lengthVal;
+
+            if (!isNaN(depthVal) && depthVal > 0) {
+                widthVal = widthVal + (depthVal * 2) + 1;
+                lengthVal = lengthVal + (depthVal * 2) + 1;
+                console.log(`[DEBUG] Canal adjusted for depth => widthVal: ${widthVal}, lengthVal: ${lengthVal}`);
+            }
+
+            const priceListCanal = {
+                '0.3': { price: 50, material: 'LDPE' },
+                '0.5': { price: 60, material: 'LDPE' }
             };
 
             const formatNumber = (num) => {
                 return Number.isInteger(num) ? num.toFixed(0) : num.toFixed(2);
             };
 
-            const area = width * length;
-            let result = "";
-            let totalPrice = 0;
-	    let deposit = 0 ;
+            const area = widthVal * lengthVal;
+            let totalPrice = area * priceListCanal[size.value].price;
+            let mat = priceListCanal[size.value].material;
 
-            if (size.value === "all") {
-                result += `ขนาด ${formatNumber(originalWidth)} ม. × ${formatNumber(originalLength)} ม.${depth ? ` ลึก ${depth} ม.` : ""}\n`;
-                if (showAdjustedSize) {
-                    result += `ผ้าขนาด ${formatNumber(width)} ม. × ${formatNumber(length)} ม.\n`;
-                }
-                result += `${sizeInfoText}\n\n`;
+            let shipFee = 0;
+            if (totalPrice < 3000) {
+                shipFee = 300;
+            }
+            let sum = totalPrice + shipFee;
 
-                for (const [sizeKey, { price, material }] of Object.entries(priceList)) {
-                    const currentPrice = area * price;
-                    result += `ผ้าพลาสติก ${material} หนา ${sizeKey} มม. (${price}บาท/ตร.ม.) = ${currentPrice.toLocaleString()} บาท\n`;
-                }
+            let resultText = `📌 สรุปยอดสั่งซื้อทั้งหมด: ${sum.toLocaleString()} บาท\n`;
+            resultText += `รบกวนลูกค้าตรวจสอบรายการให้ครบก่อนยืนยันนะครับ ✨\n`;
+            resultText += `หากเริ่มผลิตแล้ว จะไม่สามารถแก้ไขหรือยกเลิกได้ครับ\n\n`;
+            resultText += `📍 รายการ:\n`;
+            resultText += `ผ้าพลาสติก ${mat} หนา ${size.value} มม. (${priceListCanal[size.value].price} บาท/ตร.ม.)\n`;
+            resultText += `ขนาด ${formatNumber(originalWidth)} ม. × ${formatNumber(originalLength)} ม.${depthVal > 0 ? ` ลึก ${depthVal} ม.` : ""} = ${area.toLocaleString()} ตร.ม.\n`;
+            resultText += `(ขนาดผ้าที่แจ้งนี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 0.5 เมตรแล้ว)\n`;
+            if (shipFee > 0) {
+                resultText += `ราคาผ้า ${totalPrice.toLocaleString()} บาท\n`;
+                resultText += `ค่าจัดส่ง 300 บาท\n`;
             } else {
-                const { price, material } = priceList[size.value];
-                totalPrice = area * price;
+                resultText += `(ส่งฟรี ชำระเงินเมื่อได้รับของครับ)\n`;
+            }
+            resultText += `ยอดรวม ${sum.toLocaleString()} บาท\n\n`;
 
-                result += `ผ้าพลาสติก ${material} หนา ${size.value} มม. (${price}บาท/ตร.ม.)\n`;
-                result += `ขนาด ${formatNumber(originalWidth)} ม. × ${formatNumber(originalLength)} ม.${depth ? ` ลึก ${depth} ม.` : ""}\n`;
-                if (showAdjustedSize) {
-                    result += `ผ้าขนาด ${formatNumber(width)} ม. × ${formatNumber(length)} ม.\n\n`;
-                }
-                result += `${sizeInfoText}\nราคา ${totalPrice.toLocaleString()} บาท\n`;
-
-                if (totalPrice < 3000) {
-                    const shippingCost = 300;
-                    result += `\nค่าจัดส่ง ${shippingCost.toLocaleString()} บาท`;
-                    totalPrice += shippingCost;
+            if (sum >= 5000) {
+                    let deposit = sum * 0.1;
+                    let balance = sum - deposit;
+                    resultText += `✅ ชำระมัดจำ 10% (${deposit.toLocaleString()} บาท) เพื่อยืนยันคำสั้งซื้อ\n`;
+                    resultText += `💳 ธนาคารกสิกรไทย เลขบัญชี 188-8-59993-9\n`;
+                    resultText += `🏢 บริษัท มนูธรรม พลาสติก จำกัด\n`;
+                    resultText += `📢 บริษัทมีบัญชีเดียว เพื่อความถูกต้องดูชื่อก่อนโอนทุกครั้งนะครับ 💚\n`;
+                    resultText += `\n📦 แจ้งชื่อ-ที่อยู่ & เบอร์โทรศัพท์\n`;
+                    resultText += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 2-4 วัน\n`;
+                    resultText += `ส่วนที่เหลือ ${balance.toLocaleString()} บาท โอนเมื่อได้รับของครับ 😉\n`;
                 } else {
-                    result += `\nส่งฟรี ชำระเงินเมื่อได้รับของครับ`;
-                }
+                    resultText += `ยืนยันการสั่งซื้อแล้วแจ้งชื่อ-ที่อยู่ & เบอร์โทรศัพท์ครับ\n`;
+                    resultText += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 2-4 วัน\n`;
+                    resultText += `ส่วนที่เหลือ ${deposit.toLocaleString()} บาท โอนเมื่อได้รับของครับ 😉\n`;
+            }
 
-                result += `\n\nยอดรวมทั้งหมด = ${totalPrice.toLocaleString()} บาท`;
-            }
-		result += `\nกรุณาตรวจสอบรายการสั่งซื้อให้ครบถ้วนก่อนยืนยันสินค้า เนื่องจากเมื่อเริ่มผลิตแล้วจะไม่สามารถยกเลิกหรือแก้ไขออเดอร์ได้`;
-            if (totalPrice >= 5000) {
-		deposit = totalPrice*0.1 ;
-                result += `\nโปรดชำระมัดจำ 10% (${deposit.toLocaleString()} บาท) พร้อมแจ้งชื่อ-ที่อยู่ และเบอร์โทรศัพท์ สินค้าจะจัดส่งถึงคุณภายใน 6-8 วันครับ`;
-            } else {
-            result += `\nยืนยันการสั่งซื้อ กรุณาแจ้งชื่อ-ที่อยู่ และเบอร์โทรศัพท์ สินค้าจะจัดส่งถึงคุณภายใน 2-4 วันครับ`;
-            }
-            
-            document.getElementById('result').value = result;
-            document.getElementById('copyButton').style.display = 'flex';
-            document.getElementById('resetButton').style.display = 'block';
+            console.log(`[DEBUG] Canal result => ${resultText}`);
+            canalResult.value = resultText.trim();
+            canalCopy.style.display = 'flex';
+            canalReset.style.display = 'block';
         };
 
-        document.getElementById('copyButton').onclick = function() {
-            const resultText = document.getElementById('result');
-            resultText.select();
+        canalCopy.onclick = function() {
+            console.log("[DEBUG] Canal copy clicked.");
+            canalResult.select();
             document.execCommand('copy');
             alert("คัดลอกข้อความแล้ว");
         };
 
-        document.getElementById('resetButton').onclick = function() {
-            document.getElementById('calcForm').reset();
-            document.getElementById('result').value = '';
-            document.getElementById('copyButton').style.display = 'none';
-            document.getElementById('resetButton').style.display = 'none';
+        canalReset.onclick = function() {
+            console.log("[DEBUG] Canal reset clicked.");
+            canalForm.reset();
+            canalWidth.disabled = false;
+            canalResult.value = '';
+            canalCopy.style.display = 'none';
+            canalReset.style.display = 'none';
         };
+
+        const circularForm = document.getElementById('circularForm');
+        const circularResult = document.getElementById('circularResult');
+        const circularCopy = document.getElementById('circularCopy');
+        const circularReset = document.getElementById('circularReset');
+
+        const circularInfo = {
+            '6': {
+                volume: 34000,
+                price: 35000
+            },
+            '8': {
+                volume: 60000,
+                price: 50000
+            },
+            '10': {
+                volume: 95000,
+                price: 63000
+            },
+            '12': {
+                volume: 135000,
+                price: 72000
+            }
+        };
+
+        circularForm.onsubmit = function(e) {
+            e.preventDefault();
+            console.log("[DEBUG] Circular form submitted.");
+            const diameter = document.querySelector('input[name="circleDiameter"]:checked');
+            if (!diameter) {
+                alert("กรุณาเลือกขนาดบ่อกลม");
+                console.log("[DEBUG] Circular form validation failed.");
+                return false;
+            }
+            const diameterValue = diameter.value;
+            const data = circularInfo[diameterValue];
+            console.log(`[DEBUG] Circular input => diameter: ${diameterValue}, data: ${JSON.stringify(data)}`);
+            let resultText = `📌 สรุปยอดสั่งซื้อทั้งหมด (บ่อกลม)\n`;
+            resultText += `บ่อกลม เมทัลชีทบลูสโคป สูง 1.2 ม. เส้นผ่านศูนย์กลาง ${diameterValue} เมตร\n`;
+            resultText += `ความจุประมาณ ${data.volume.toLocaleString()} ลิตร\n`;
+            resultText += `ราคา ${data.price.toLocaleString()} บาท\n`;
+            if (data.price >= 80000) {
+                resultText += `\nสั่งเกิน 80,000 ส่งพร้อมติดตั้งฟรี!`;
+            } else {
+                resultText += `\n(ค่าจัดส่งหรือติดตั้ง คิดเพิ่มตามระยะทาง)`;
+            }
+            resultText += `\n\nกรุณาตรวจสอบรายละเอียดสินค้าให้ครบถ้วนก่อนยืนยันการสั่งซื้อ`;
+            console.log(`[DEBUG] Circular result => ${resultText}`);
+            circularResult.value = resultText.trim();
+            circularCopy.style.display = 'flex';
+            circularReset.style.display = 'block';
+        };
+
+        circularCopy.onclick = function() {
+            console.log("[DEBUG] Circular copy clicked.");
+            circularResult.select();
+            document.execCommand('copy');
+            alert("คัดลอกข้อความแล้ว");
+        };
+
+        circularReset.onclick = function() {
+            console.log("[DEBUG] Circular reset clicked.");
+            circularForm.reset();
+            circularResult.value = '';
+            circularCopy.style.display = 'none';
+            circularReset.style.display = 'none';
+        };
+        console.log("[DEBUG] Script finished loading.");
+    </script>
+    <script>
+    function runTests() {
+        try {
+            if (!document.getElementById('pondWidth')) {
+                console.error('Test #1 => FAIL: pondWidth not found');
+            } else {
+                console.log('Test #1 => PASS: pondWidth exists');
+            }
+        } catch(e) {
+            console.error('Test #1 => FAIL', e);
+        }
+        try {
+            if (!window.circularInfo) {
+                console.error('Test #2 => FAIL: circularInfo is not defined');
+            } else {
+                console.log('Test #2 => PASS: circularInfo is defined');
+            }
+        } catch(e) {
+            console.error('Test #2 => FAIL', e);
+        }
+    }
+    runTests();
     </script>
 </body>
 </html>
