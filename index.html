@@ -295,17 +295,21 @@
             const area = widthVal * lengthVal;
             let totalPrice = 0;
 
-            const formatNumber = (num) => {
-                return Number.isInteger(num) ? num.toFixed(0) : num.toFixed(2);
-            };
+            function roundUp(n){
+                return Math.ceil(n);
+            }
+
+            function formatNumber(num){
+                return roundUp(num).toString();
+            }
 
             let resultText = "";
 
             if (size.value === "all") {
                 console.log("[DEBUG] Pond size => ALL");
-                let subPrice03 = area * 50;
-                let subPrice05 = area * 65;
-                let subPrice075 = area * 85;
+                let subPrice03 = roundUp(area * 50);
+                let subPrice05 = roundUp(area * 65);
+                let subPrice075 = roundUp(area * 85);
 
                 resultText = `จากขนาดที่ลูกค้าแจ้งมา ราคาดังนี้ครับ\n` +
                     `✅ LDPE หนา 0.3 มม. – ${subPrice03.toLocaleString()} บาท (50 บาท/ตร.ม.)\n` +
@@ -317,40 +321,39 @@
             } else {
                 console.log(`[DEBUG] Pond size => ${size.value}`);
                 const sel = priceListPond[size.value];
-                totalPrice = area * sel.price;
+                totalPrice = roundUp(area * sel.price);
 
                 let shippingFee = 0;
                 if (totalPrice < 5000) {
                     shippingFee += 300;
                 }
                 if (pondSpecialProvince.checked) {
-                    shippingFee += (5 * area);
+                    shippingFee += roundUp(5 * area);
                     shippingFee = Math.min(shippingFee,2000);
                 }
-                let sum = totalPrice + shippingFee;
-
-                let shipText = "";
+                shippingFee = roundUp(shippingFee);
+                let sum = roundUp(totalPrice + shippingFee);
 
                 resultText += `📍 รายการ:\n`;
                 resultText += `ผ้าพลาสติก ${sel.material} หนา ${size.value} มม. (${sel.price} บาท/ตร.ม.)\n`;
-                resultText += `ขนาด ${formatNumber(originalWidth)} ม. × ${formatNumber(originalLength)} ม.${depthVal > 0 ? ` ลึก ${depthVal} ม.` : ""} \n`;
-                resultText += `ผ้าขนาด ${formatNumber(widthVal)} ม. x ${formatNumber(lengthVal)} ม. = ${area.toLocaleString()} ตร.ม. \n`;
+                resultText += `ขนาด ${originalWidth} ม. × ${originalLength} ม.${depthVal > 0 ? ` ลึก ${depthVal} ม.` : ""} \n`;
+                resultText += `ผ้าขนาด ${widthVal} ม. x ${lengthVal} ม. = ${area.toLocaleString()} ตร.ม. \n`;
                 resultText += `(ขนาดผ้านี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 1 เมตรแล้ว)\n\n`;
-                let newSum = sum;
                 if (shippingFee > 0) {
                     resultText += `ราคาผ้า ${totalPrice.toLocaleString()} บาท\n`;
-                    resultText += `ค่าจัดส่ง ${(shippingFee).toLocaleString()} บาท\n`;
+                    resultText += `ค่าจัดส่ง ${shippingFee.toLocaleString()} บาท\n`;
                 }
-                resultText += `📌 สรุปยอดสั่งซื้อทั้งหมด: ${newSum.toLocaleString()} บาท\n`;
+                resultText += `📌 สรุปยอดสั่งซื้อทั้งหมด: ${sum.toLocaleString()} บาท\n`;
                 resultText += `รบกวนลูกค้าตรวจสอบรายการให้ครบก่อนยืนยันนะครับ ✨\n`;
                 resultText += `หากเริ่มผลิตแล้ว จะไม่สามารถแก้ไขหรือยกเลิกได้ครับ\n\n`;
 
-                if (shippingFee < 0) {
+                if (shippingFee <= 0) {
                   resultText += `\n(ส่งฟรี ชำระเงินเมื่อได้รับของครับ)`;
                 }
-                if (newSum >= 5000) {
-                    let deposit = newSum * 0.1;
-                    let balance = newSum - deposit;
+                if (sum >= 5000) {
+                    let deposit = sum * 0.1;
+deposit = Math.round(deposit);
+                    let balance = roundUp(sum - deposit);
                     resultText += `✅ ชำระมัดจำ 10% (${deposit.toLocaleString()} บาท) เพื่อยืนยันคำสั้งซื้อ\n`;
                     resultText += `\n📦 แจ้งชื่อ-ที่อยู่ & เบอร์โทรศัพท์\n`;
                     resultText += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 2-4 วัน\n`;
@@ -358,7 +361,7 @@
                 } else {
                     resultText += `ยืนยันการสั่งซื้อแล้วแจ้งชื่อ-ที่อยู่ & เบอร์โทรศัพท์ครับ\n`;
                     resultText += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 2-4 วัน\n`;
-                     resultText += `ยอด ${newSum.toLocaleString()} บาท โอนเมื่อได้รับของครับ 😉\n`;
+                     resultText += `ยอด ${sum.toLocaleString()} บาท โอนเมื่อได้รับของครับ 😉\n`;
                 }
             }
 
@@ -436,12 +439,16 @@
                 '0.5': { price: 60, material: 'LDPE' }
             };
 
-            const formatNumber = (num) => {
-                return Number.isInteger(num) ? num.toFixed(0) : num.toFixed(2);
-            };
+            function roundUp(n){
+                return Math.ceil(n);
+            }
+
+            function formatNumber(num){
+                return roundUp(num).toString();
+            }
 
             const area = widthVal * lengthVal;
-            let totalPrice = area * priceListCanal[size.value].price;
+            let totalPrice = roundUp(area * priceListCanal[size.value].price);
             let mat = priceListCanal[size.value].material;
 
             let shippingFee = 0;
@@ -449,13 +456,14 @@
                 shippingFee = 300;
             }
             if (canalSpecialProvince.checked) {
-                shippingFee += 5 * area;
+                shippingFee += roundUp(5 * area);
             }
-            let sum = totalPrice + shippingFee;
+            shippingFee = roundUp(shippingFee);
+            let sum = roundUp(totalPrice + shippingFee);
 
             let resultText = `📍 รายการ:\n`;
             resultText += `ผ้าพลาสติก ${mat} หนา ${size.value} มม. (${priceListCanal[size.value].price} บาท/ตร.ม.)\n`;
-            resultText += `ขนาด ${formatNumber(originalWidth)} ม. × ${formatNumber(originalLength)} ม.${depthVal > 0 ? ` ลึก ${depthVal} ม.` : ""} = ${area.toLocaleString()} ตร.ม.\n`;
+            resultText += `ขนาด ${originalWidth} ม. × ${originalLength} ม.${depthVal > 0 ? ` ลึก ${depthVal} ม.` : ""} = ${area.toLocaleString()} ตร.ม.\n`;
             resultText += `(ขนาดผ้านี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 0.5 เมตรแล้ว)\n\n`;
 
             resultText += `📌 สรุปยอดสั่งซื้อทั้งหมด: ${sum.toLocaleString()} บาท\n`;
@@ -472,7 +480,8 @@
 
             if (sum >= 5000) {
                 let deposit = sum * 0.1;
-                let balance = sum - deposit;
+deposit = Math.round(deposit);
+                let balance = roundUp(sum - deposit);
                 resultText += `✅ ชำระมัดจำ 10% (${deposit.toLocaleString()} บาท) เพื่อยืนยันคำสั้งซื้อ\n`;
                 resultText += `\n📦 แจ้งชื่อ-ที่อยู่ & เบอร์โทรศัพท์\n`;
                 resultText += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 2-4 วัน\n`;
