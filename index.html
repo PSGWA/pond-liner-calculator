@@ -292,51 +292,47 @@
                 '0.5': { price: 65, material: 'HDPE' },
                 '0.75': { price: 85, material: 'HDPE' }
             };
-            const area = widthVal * lengthVal;
-            let totalPrice = 0;
 
-            function roundUp(n){
-                return Math.ceil(n);
+            function roundDown(n){
+                return Math.floor(n);
             }
 
             function formatNumber(num){
-                return roundUp(num).toString();
+                return roundDown(num).toString();
             }
 
+            const area = widthVal * lengthVal;
+            let totalPrice = 0;
             let resultText = "";
 
             if (size.value === "all") {
                 console.log("[DEBUG] Pond size => ALL");
-                let subPrice03 = roundUp(area * 50);
-                let subPrice05 = roundUp(area * 65);
-                let subPrice075 = roundUp(area * 85);
-
-                resultText = `จากขนาดที่ลูกค้าแจ้งมา ราคาดังนี้ครับ\n` +
-                    `✅ LDPE หนา 0.3 มม. – ${subPrice03.toLocaleString()} บาท (50 บาท/ตร.ม.)\n` +
-                    `✅ HDPE หนา 0.5 มม. – ${subPrice05.toLocaleString()} บาท (65 บาท/ตร.ม.)\n` +
-                    `✅ HDPE หนา 0.75 มม. – ${subPrice075.toLocaleString()} บาท (85 บาท/ตร.ม.)\n\n` +
-                    `เรามี 3 ความหนาให้เลือกครับ ✨\n` +
-                    `ยิ่งหนา ยิ่งทนทาน ต่อสภาพแวดล้อมรุนแรงและพื้นผิวขรุขระ \n\n` +
-                    `สนใจความหนาไหนแจ้งได้เลยครับ😊`;
+                let subPrice03 = roundDown(area * 50);
+                let subPrice05 = roundDown(area * 65);
+                let subPrice075 = roundDown(area * 85);
+                resultText += `จากขนาดที่ลูกค้าแจ้งมา ราคาดังนี้ครับ\n`;
+                resultText += `✅ LDPE หนา 0.3 มม. – ${subPrice03.toLocaleString()} บาท (50 บาท/ตร.ม.)\n`;
+                resultText += `✅ HDPE หนา 0.5 มม. – ${subPrice05.toLocaleString()} บาท (65 บาท/ตร.ม.)\n`;
+                resultText += `✅ HDPE หนา 0.75 มม. – ${subPrice075.toLocaleString()} บาท (85 บาท/ตร.ม.)\n\n`;
+                resultText += `เรามี 3 ความหนาให้เลือกครับ ✨\nยิ่งหนา ยิ่งทนทาน ต่อสภาพแวดล้อมรุนแรงและพื้นผิวขรุขระ \n\nสนใจความหนาไหนแจ้งได้เลยครับ😊`;
             } else {
-                console.log(`[DEBUG] Pond size => ${size.value}`);
                 const sel = priceListPond[size.value];
-                totalPrice = roundUp(area * sel.price);
+                totalPrice = roundDown(area * sel.price);
 
                 let shippingFee = 0;
                 if (totalPrice < 5000) {
                     shippingFee += 300;
                 }
                 if (pondSpecialProvince.checked) {
-                    shippingFee += roundUp(5 * area);
-                    shippingFee = Math.min(shippingFee,2000);
+                    shippingFee += roundDown(5 * area);
+                    shippingFee = Math.min(shippingFee, 2000);
                 }
-                shippingFee = roundUp(shippingFee);
-                let sum = roundUp(totalPrice + shippingFee);
+                shippingFee = roundDown(shippingFee);
+                let sum = roundDown(totalPrice + shippingFee);
 
                 resultText += `📍 รายการ:\n`;
                 resultText += `ผ้าพลาสติก ${sel.material} หนา ${size.value} มม. (${sel.price} บาท/ตร.ม.)\n`;
-                resultText += `ขนาด ${originalWidth} ม. × ${originalLength} ม.${depthVal > 0 ? ` ลึก ${depthVal} ม.` : ""} \n`;
+                resultText += `ขนาด ${originalWidth} ม. × ${originalLength} ม.${depthVal > 0 ? ` ลึก ${depthVal} ม.` : ""}\n`;
                 resultText += `ผ้าขนาด ${widthVal} ม. x ${lengthVal} ม. = ${area.toLocaleString()} ตร.ม. \n`;
                 resultText += `(ขนาดผ้านี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 1 เมตรแล้ว)\n\n`;
                 if (shippingFee > 0) {
@@ -346,14 +342,13 @@
                 resultText += `📌 สรุปยอดสั่งซื้อทั้งหมด: ${sum.toLocaleString()} บาท\n`;
                 resultText += `รบกวนลูกค้าตรวจสอบรายการให้ครบก่อนยืนยันนะครับ ✨\n`;
                 resultText += `หากเริ่มผลิตแล้ว จะไม่สามารถแก้ไขหรือยกเลิกได้ครับ\n\n`;
-
                 if (shippingFee <= 0) {
-                  resultText += `\n(ส่งฟรี ชำระเงินเมื่อได้รับของครับ)`;
+                    resultText += `\n(ส่งฟรี ชำระเงินเมื่อได้รับของครับ)`;
                 }
                 if (sum >= 5000) {
                     let deposit = sum * 0.1;
-deposit = Math.round(deposit);
-                    let balance = roundUp(sum - deposit);
+                    deposit = Math.floor(deposit);
+                    let balance = Math.floor(sum - deposit);
                     resultText += `✅ ชำระมัดจำ 10% (${deposit.toLocaleString()} บาท) เพื่อยืนยันคำสั้งซื้อ\n`;
                     resultText += `\n📦 แจ้งชื่อ-ที่อยู่ & เบอร์โทรศัพท์\n`;
                     resultText += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 2-4 วัน\n`;
@@ -361,25 +356,21 @@ deposit = Math.round(deposit);
                 } else {
                     resultText += `ยืนยันการสั่งซื้อแล้วแจ้งชื่อ-ที่อยู่ & เบอร์โทรศัพท์ครับ\n`;
                     resultText += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 2-4 วัน\n`;
-                     resultText += `ยอด ${sum.toLocaleString()} บาท โอนเมื่อได้รับของครับ 😉\n`;
+                    resultText += `ยอด ${sum.toLocaleString()} บาท โอนเมื่อได้รับของครับ 😉\n`;
                 }
             }
-
-            console.log(`[DEBUG] Pond result => ${resultText}`);
             pondResult.value = resultText.trim();
             pondCopy.style.display = 'flex';
             pondReset.style.display = 'block';
         };
 
         pondCopy.onclick = function() {
-            console.log("[DEBUG] Pond copy clicked.");
             pondResult.select();
             document.execCommand('copy');
             alert("คัดลอกข้อความแล้ว");
         };
 
         pondReset.onclick = function() {
-            console.log("[DEBUG] Pond reset clicked.");
             pondForm.reset();
             pondResult.value = '';
             pondCopy.style.display = 'none';
@@ -398,8 +389,7 @@ deposit = Math.round(deposit);
 
         canalSizeRadios.forEach(radio => {
             radio.addEventListener('change', () => {
-                console.log(`[DEBUG] Canal size changed => ${radio.value}`);
-                if(radio.value === '0.5') {
+                if (radio.value === '0.5') {
                     canalWidth.value = 4;
                     canalWidth.disabled = true;
                 } else {
@@ -410,28 +400,19 @@ deposit = Math.round(deposit);
 
         canalForm.onsubmit = function(e) {
             e.preventDefault();
-            console.log("[DEBUG] Canal form submitted.");
-
             const size = document.querySelector('input[name="canalSize"]:checked');
             let widthVal = parseFloat(canalWidth.value);
             let lengthVal = parseFloat(canalLength.value);
             const depthVal = parseFloat(canalDepth.value || 0);
-
-            console.log(`[DEBUG] Canal input => size: ${size ? size.value : 'none'}, width: ${widthVal}, length: ${lengthVal}, depth: ${depthVal}`);
-
             if (!size || widthVal <= 0 || lengthVal <= 0) {
                 alert("กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง");
-                console.log("[DEBUG] Canal form validation failed.");
                 return false;
             }
-
             let originalWidth = widthVal;
             let originalLength = lengthVal;
-
             if (!isNaN(depthVal) && depthVal > 0) {
                 widthVal = widthVal + (depthVal * 2) + 1;
                 lengthVal = lengthVal + (depthVal * 2) + 1;
-                console.log(`[DEBUG] Canal adjusted for depth => widthVal: ${widthVal}, lengthVal: ${lengthVal}`);
             }
 
             const priceListCanal = {
@@ -439,37 +420,34 @@ deposit = Math.round(deposit);
                 '0.5': { price: 60, material: 'LDPE' }
             };
 
-            function roundUp(n){
-                return Math.ceil(n);
+            function roundDown(n){
+                return Math.floor(n);
             }
 
             function formatNumber(num){
-                return roundUp(num).toString();
+                return roundDown(num).toString();
             }
 
             const area = widthVal * lengthVal;
-            let totalPrice = roundUp(area * priceListCanal[size.value].price);
+            let totalPrice = roundDown(area * priceListCanal[size.value].price);
             let mat = priceListCanal[size.value].material;
-
             let shippingFee = 0;
             if (totalPrice < 5000) {
                 shippingFee = 300;
             }
             if (canalSpecialProvince.checked) {
-                shippingFee += roundUp(5 * area);
+                shippingFee += roundDown(5 * area);
             }
-            shippingFee = roundUp(shippingFee);
-            let sum = roundUp(totalPrice + shippingFee);
+            shippingFee = roundDown(shippingFee);
+            let sum = roundDown(totalPrice + shippingFee);
 
             let resultText = `📍 รายการ:\n`;
             resultText += `ผ้าพลาสติก ${mat} หนา ${size.value} มม. (${priceListCanal[size.value].price} บาท/ตร.ม.)\n`;
             resultText += `ขนาด ${originalWidth} ม. × ${originalLength} ม.${depthVal > 0 ? ` ลึก ${depthVal} ม.` : ""} = ${area.toLocaleString()} ตร.ม.\n`;
             resultText += `(ขนาดผ้านี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 0.5 เมตรแล้ว)\n\n`;
-
             resultText += `📌 สรุปยอดสั่งซื้อทั้งหมด: ${sum.toLocaleString()} บาท\n`;
             resultText += `รบกวนลูกค้าตรวจสอบรายการให้ครบก่อนยืนยันนะครับ ✨\n`;
             resultText += `หากเริ่มผลิตแล้ว จะไม่สามารถแก้ไขหรือยกเลิกได้ครับ\n\n`;
-
             if (shippingFee > 0) {
                 resultText += `ราคาผ้า ${totalPrice.toLocaleString()} บาท\n`;
                 resultText += `ค่าจัดส่งรวม ${shippingFee.toLocaleString()} บาท\n`;
@@ -477,11 +455,10 @@ deposit = Math.round(deposit);
                 resultText += `(ส่งฟรี ชำระเงินเมื่อได้รับของครับ)\n`;
             }
             resultText += `ยอดรวม ${sum.toLocaleString()} บาท\n\n`;
-
             if (sum >= 5000) {
                 let deposit = sum * 0.1;
-deposit = Math.round(deposit);
-                let balance = roundUp(sum - deposit);
+                deposit = Math.floor(deposit);
+                let balance = Math.floor(sum - deposit);
                 resultText += `✅ ชำระมัดจำ 10% (${deposit.toLocaleString()} บาท) เพื่อยืนยันคำสั้งซื้อ\n`;
                 resultText += `\n📦 แจ้งชื่อ-ที่อยู่ & เบอร์โทรศัพท์\n`;
                 resultText += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 2-4 วัน\n`;
@@ -491,22 +468,18 @@ deposit = Math.round(deposit);
                 resultText += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 2-4 วัน\n`;
                 resultText += `ยอด ${sum.toLocaleString()} บาท โอนเมื่อได้รับของครับ 😉\n`;
             }
-
-            console.log(`[DEBUG] Canal result => ${resultText}`);
             canalResult.value = resultText.trim();
             canalCopy.style.display = 'flex';
             canalReset.style.display = 'block';
         };
 
         canalCopy.onclick = function() {
-            console.log("[DEBUG] Canal copy clicked.");
             canalResult.select();
             document.execCommand('copy');
             alert("คัดลอกข้อความแล้ว");
         };
 
         canalReset.onclick = function() {
-            console.log("[DEBUG] Canal reset clicked.");
             canalForm.reset();
             canalWidth.disabled = false;
             canalResult.value = '';
@@ -540,16 +513,13 @@ deposit = Math.round(deposit);
 
         circularForm.onsubmit = function(e) {
             e.preventDefault();
-            console.log("[DEBUG] Circular form submitted.");
             const diameter = document.querySelector('input[name="circleDiameter"]:checked');
             if (!diameter) {
                 alert("กรุณาเลือกขนาดบ่อกลม");
-                console.log("[DEBUG] Circular form validation failed.");
                 return false;
             }
             const diameterValue = diameter.value;
             const data = circularInfo[diameterValue];
-            console.log(`[DEBUG] Circular input => diameter: ${diameterValue}, data: ${JSON.stringify(data)}`);
             let resultText = `📌 สรุปยอดสั่งซื้อทั้งหมด (บ่อกลม)\n`;
             resultText += `บ่อกลม เมทัลชีทบลูสโคป สูง 1.2 ม. เส้นผ่านศูนย์กลาง ${diameterValue} เมตร\n`;
             resultText += `ความจุประมาณ ${data.volume.toLocaleString()} ลิตร\n`;
@@ -560,21 +530,18 @@ deposit = Math.round(deposit);
                 resultText += `\n(ค่าจัดส่งหรือติดตั้ง คิดเพิ่มตามระยะทาง)`;
             }
             resultText += `\n\nกรุณาตรวจสอบรายละเอียดสินค้าให้ครบถ้วนก่อนยืนยันการสั่งซื้อ`;
-            console.log(`[DEBUG] Circular result => ${resultText}`);
             circularResult.value = resultText.trim();
             circularCopy.style.display = 'flex';
             circularReset.style.display = 'block';
         };
 
         circularCopy.onclick = function() {
-            console.log("[DEBUG] Circular copy clicked.");
             circularResult.select();
             document.execCommand('copy');
             alert("คัดลอกข้อความแล้ว");
         };
 
         circularReset.onclick = function() {
-            console.log("[DEBUG] Circular reset clicked.");
             circularForm.reset();
             circularResult.value = '';
             circularCopy.style.display = 'none';
