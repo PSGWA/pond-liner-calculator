@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>คำนวณผ้าปูบ่อ • สรุปออเดอร์</title>
+<style>
+:root{
+ --clr-primary:#28a745;
+ --clr-primary-dark:#208437;
+ --clr-secondary:#007bff;
+ --clr-danger:#dc3545;
+ --clr-bg:#f9fafc;
+ --radius:12px;
+ --shadow:0 6px 14px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
+body{margin:0;background:var(--clr-bg);color:#333;line-height:1.5}
+h1{text-align:center;margin:30px 0;font-size:28px}
+.tabs{display:flex;justify-content:center;gap:14px;margin-bottom:24px;flex-wrap:wrap}
+.tab{padding:10px 24px;font-weight:600;border:1px solid #ccc;border-radius:var(--radius);background:#fff;cursor:pointer;transition:.3s}
+.tab:hover{background:#eee}
+.tab.active{border-color:var(--clr-primary);background:var(--clr-primary);color:#fff}
+.container{max-width:780px;margin:0 auto 40px;padding:28px;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow)}
+label{display:block;margin-bottom:6px;font-weight:600}
+input[type=number],select,textarea{width:100%;padding:12px 14px;border:1px solid #ccc;border-radius:var(--radius);margin-bottom:18px;font-size:15px}
+textarea{resize:none;background:#fafafa;height:160px}
+button{border:none;border-radius:var(--radius);padding:12px 22px;font-size:15px;font-weight:600;cursor:pointer;transition:.25s;box-shadow:var(--shadow)}
+.btn-primary{background:var(--clr-primary);color:#fff}.btn-primary:hover{background:var(--clr-primary-dark)}
+.btn-secondary{background:var(--clr-secondary);color:#fff}
+.btn-danger{background:var(--clr-danger);color:#fff;padding:8px 12px;font-size:13px;box-shadow:none}
+.btn-small{padding:8px 16px;font-size:14px}
+.hidden{display:none}
+.items-table{width:100%;border-collapse:collapse;margin-bottom:20px;border:1px solid #e2e8f0;border-radius:var(--radius);overflow:hidden}
+.items-table thead{background:var(--clr-primary);color:#fff}
+.items-table th,.items-table td{padding:10px;text-align:center}
+.items-table th:first-child,.items-table td:first-child{min-width:150px} /* widened column */
+.items-table tbody tr:nth-child(odd){background:#f5f7fa}
+.items-table tbody tr:hover{background:#e9fbe8}
+.copy-btn{display:inline-flex;align-items:center;gap:8px;border:none;padding:10px 18px;border-radius:var(--radius);background:var(--clr-secondary);color:#fff;font-weight:600;box-shadow:var(--shadow);cursor:pointer}
+.copy-btn:hover{background:#0069d8}
+@media(max-width:600px){h1{font-size:24px}.tab{padding:8px 16px;font-size:14px}}
+</style>
+</head>
+<body>
+<h1>คำนวณค่า ผ้าปูบ่อ / คลองไส้ไก่ / บ่อกลม</h1>
+<div class="tabs">
+ <div class="tab active" data-target="summaryContainer">สรุปออเดอร์</div>
+</div>
+<!-- SUMMARY -->
+<div class="container" id="summaryContainer">
+<form id="summaryForm">
+ <label>ข้อมูลผู้รับ (ชื่อ-ที่อยู่-เบอร์โทร)</label>
+ <textarea id="custInfo" required placeholder="คัดลอกข้อมูลลูกค้ามาวางที่นี่"></textarea>
+ <h3 style="margin-top:0">รายการผ้า</h3>
+ <table class="items-table" id="itemsTable">
+  <thead>
+   <tr><th>ความหนา</th><th>กว้าง (ม.)</th><th>ยาว (ม.)</th><th>ลึก (ม.)</th><th>คลองไส้ไก่?</th><th>จำนวน</th><th>ลบ</th></tr>
+  </thead><tbody></tbody>
+ </table>
+ <button type="button" id="addItem" class="btn-secondary btn-small">+ เพิ่มรายการ</button>
+ <label style="margin-top:14px"><input type="checkbox" id="summarySpecial"> จังหวัดพิเศษ (+5 บาท/ตร.ม. สูงสุด 1,500 บาท)</label>
+ <button type="submit" class="btn-primary" style="margin-top:20px">ยืนยันสรุปออเดอร์</button>
+</form>
+<textarea id="summaryResult" readonly style="margin-top:24px"></textarea>
+<button id="summaryCopy" class="copy-btn hidden" style="margin-top:16px">คัดลอกข้อความ</button>
+</div>
+<script>
+const fmt=n=>Math.floor(n).toLocaleString();
+const PRICE={'0.3L':50,'0.5L':60,'0.5H':65,'0.75H':85};
+const MAT=c=>c.endsWith('L')?'LDPE':'HDPE';const THK=c=>c.replace(/[LH]$/,'');
+const tbody=document.querySelector('#itemsTable tbody');
+const addRow=()=>{const tr=document.createElement('tr');tr.innerHTML=`<td><select class="t"><option value="0.3L">LDPE 0.3</option><option value="0.5L">LDPE 0.5</option><option value="0.5H">HDPE 0.5</option><option value="0.75H">HDPE 0.75</option></select></td><td><input class="w" type="number" step="0.01"></td><td><input class="l" type="number" step="0.01"></td><td><input class="d" type="number" step="0.01"></td><td><input type="checkbox" class="canal"></td><td><input class="q" type="number" value="1" min="1"></td><td><button type="button" class="btn-danger del">ลบ</button></td>`;tr.querySelector('.del').onclick=()=>tr.remove();tbody.appendChild(tr);} ;addRow();document.getElementById('addItem').onclick=addRow;
+const summaryForm=document.getElementById('summaryForm');summaryForm.onsubmit=e=>{e.preventDefault();const cust=document.getElementById('custInfo').value.trim();if(!cust)return alert('กรุณากรอกข้อมูลผู้รับ');let total=0,areaSum=0,list='',idx=1;tbody.querySelectorAll('tr').forEach(tr=>{const code=tr.querySelector('.t').value,w=parseFloat(tr.querySelector('.w').value||0),l=parseFloat(tr.querySelector('.l').value||0),d=parseFloat(tr.querySelector('.d').value||0),q=parseInt(tr.querySelector('.q').value||1),isCanal=tr.querySelector('.canal').checked;if(w<=0||l<=0||q<=0)return;let adjW=w,adjL=l;if(d>0){const pad=isCanal?1:2;adjW=w+d*2+pad;adjL=l+d*2+pad;}const area=adjW*adjL,cost=Math.floor(area*PRICE[code]*q);total+=cost;areaSum+=area*q;list+=`📍 รายการ ${idx} :\nผ้าพลาสติก ${MAT(code)} หนา ${THK(code)} มม. (${PRICE[code]} บาท/ตร.ม.)\nผ้าขนาด ${adjW} × ${adjL} ม. = ${fmt(area)} ตร.ม. \nราคาผ้า ${fmt(cost)} บาท\n\n`;idx++;});if(total===0)return alert('กรุณากรอกอย่างน้อย 1 รายการ');let ship=total<5000?300:0;if(document.getElementById('summarySpecial').checked){let ex=Math.floor(areaSum*5);ship+=ex>1500?1500:ex;}const grand=Math.floor(total+ship),dep=grand>=5000?Math.floor(grand*0.1):0,bal=grand-dep;let out=`ส่ง\n${cust}\n\n${list}📌 สรุปยอดสั่งซื้อทั้งหมด\nยอดรวม ${fmt(grand)} บาท\n`;out+=ship?`ค่าจัดส่ง ${fmt(ship)} บาท\n`:'(ส่งฟรี ชำระเงินเมื่อได้รับของครับ)\n';if(dep){out+=`✅ ชำระมัดจำ 10% (${fmt(dep)} บาท)\nส่วนที่เหลือ ${fmt(bal)} บาท โอนเมื่อได้รับของครับ 😉\n`;}out+='🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 2-4 วัน';document.getElementById('summaryResult').value=out.trim();document.getElementById('summaryCopy').classList.remove('hidden');};
+document.getElementById('summaryCopy').onclick=()=>{document.getElementById('summaryResult').select();document.execCommand('copy');alert('คัดลอกแล้ว');};
+</script>
+</body>
+</html>
