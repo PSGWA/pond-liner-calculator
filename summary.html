@@ -100,6 +100,9 @@ button{border:none;border-radius:var(--radius);padding:12px 22px;font-size:15px;
  </table>
  <button type="button" id="addItem" class="btn-secondary btn-small">+ เพิ่มรายการ</button>
  <label style="margin-top:14px"><input type="checkbox" id="summarySpecial"> จังหวัดพิเศษ (+5 บาท/ตร.ม. สูงสุด 1,500 บาท)</label>
+ <label>
+  <input type="checkbox" id="summaryDiscount5"> ใช้ส่วนลดพิเศษ 5%
+</label>
 <!-- ส่วนที่เพิ่ม -->
 <label>เลือกเพจ</label>
 <select id="pageSelect">
@@ -186,6 +189,12 @@ summaryForm.onsubmit = (e) => {
     const area = adjW * adjL;
     const cost = Math.floor(area * PRICE[code] * q);
     total += cost;
+   // ตรวจสอบว่าใช้ส่วนลดหรือไม่
+const useDiscount = document.getElementById('summaryDiscount5').checked;
+if (useDiscount) {
+  total = Math.floor(total * 0.95); // ลด 5%
+}
+
     areaSum += area * q;
 
     list += `📍 รายการ ${idx} :\nผ้าพลาสติก ${MAT(code)} หนา ${THK(code)} มม. (${PRICE[code]} บาท/ตร.ม.)\nผ้าขนาด ${adjW} × ${adjL} ม. = ${fmt(area)} ตร.ม. \nราคาผ้า ${fmt(cost)} บาท\n`;
@@ -214,7 +223,9 @@ summaryForm.onsubmit = (e) => {
   } else {
     out = `${list}📌 สรุปยอดสั่งซื้อทั้งหมด\nยอดรวม ${fmt(grand)} บาท\n`;
   }
-
+ if (useDiscount) {
+  out += `(ส่วนลดพิเศษ 5%)\n`;
+}
   out += ship ? `ค่าจัดส่ง ${fmt(ship)} บาท\n` : '(ส่งฟรี ชำระเงินเมื่อได้รับของค่ะ)\n';
 
   if (dep) {
