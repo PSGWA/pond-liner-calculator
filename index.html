@@ -165,7 +165,7 @@
                 <input type="checkbox" id="pondSpecialProvince" value="yes" /> ส่งจังหวัดพัทลุง สตูล ปัตตานี ยะลา นราธิวาส (คิดค่าจัดส่งเพิ่ม 5 บาท/ตร.ม.)
             </label>
 <label>
-    <input type="checkbox" id="pondDiscount5" value="yes" />
+    <input type="checkbox" id="canalDiscount5" value="yes" />
     ใช้ส่วนลดพิเศษ 5%
 </label>
 
@@ -453,9 +453,6 @@ if (canalDiscount5.checked) {
   discountAmount = Math.floor(totalPrice * 0.05);
   totalPrice = totalPrice - discountAmount;
 }
-		if (pondDiscount5.checked) {
-    totalPrice = Math.floor(totalPrice * 0.95); // ลด 5%
-}
 
             let mat = priceListCanal[size.value].material;
             let shippingFee = 0;
@@ -473,8 +470,8 @@ if (canalDiscount5.checked) {
             resultText += `ขนาด ${originalWidth} ม. × ${originalLength} ม.${depthVal > 0 ? ` ลึก ${depthVal} ม.` : ""} = ${area.toLocaleString()} ตร.ม.\n`;
             resultText += `(ขนาดผ้านี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 0.5 เมตรแล้ว)\n\n`;
             resultText += `📌 สรุปยอดสั่งซื้อทั้งหมด: ${sum.toLocaleString()} บาท\n`;
-if (pondDiscount5.checked) {
-    resultText += `(ส่วนลดพิเศษ 5%) \n`;
+if (canalDiscount5.checked) {
+  resultText += `(ส่วนลดพิเศษ 5% = ${discountAmount.toLocaleString()} บาท)\n`;
 }
             resultText += `รบกวนลูกค้าตรวจสอบรายการให้ครบก่อนยืนยันนะคะ ✨\n`;
             resultText += `หากเริ่มผลิตแล้ว จะไม่สามารถแก้ไขหรือยกเลิกได้ค่ะ\n\n`;
