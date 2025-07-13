@@ -447,6 +447,12 @@ if (pondDiscount5.checked) {
 
             const area = widthVal * lengthVal;
             let totalPrice = roundDown(area * priceListCanal[size.value].price);
+		const canalDiscount5 = document.getElementById('canalDiscount5');
+let discountAmount = 0;
+if (canalDiscount5.checked) {
+  discountAmount = Math.floor(totalPrice * 0.05);
+  totalPrice = totalPrice - discountAmount;
+}
 		if (pondDiscount5.checked) {
     totalPrice = Math.floor(totalPrice * 0.95); // ลด 5%
 }
