@@ -208,7 +208,7 @@ document.getElementById('summaryForm').onsubmit = (e) => {
   let ship = total < 5000 ? 300 : 0;
   if (document.getElementById('summarySpecial').checked) {
     let ex = Math.floor(areaSum * 5);
-    ship += ex > 1500 ? 1500 : ex;
+    ship += ex > 2000 ? 2000 : ex;
   }
 
   const grand = Math.floor(total + ship);
