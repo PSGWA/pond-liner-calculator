@@ -408,7 +408,7 @@
       if(total===0) return alert('กรุณากรอกอย่างน้อย 1 รายการ');
 
       let discountAmount=0; if(useDiscount){ discountAmount=Math.floor(total*0.05); total-=discountAmount; }
-      let ship = total<5000?300:0; if(document.getElementById('summarySpecial').checked){ const ex=Math.floor(areaSum*5); ship += ex>1500?1500:ex; }
+      let ship = total<5000?300:0; if(document.getElementById('summarySpecial').checked){ const ex=Math.floor(areaSum*5); ship += ex>2000?2000:ex; }
       const grand = Math.floor(total+ship); const dep = grand>=5000?Math.floor(grand*0.1):0; const bal = grand-dep;
 
       let out = cust?`ส่ง\n${cust}\n\n${list}`:list;
@@ -435,5 +435,6 @@
   </script>
 </body>
 </html>
+
 
 
