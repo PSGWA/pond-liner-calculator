@@ -23,7 +23,7 @@
 
     h1{ text-align:center; margin:26px 0 18px; font-size:26px; }
 
-    /* Tabs — rectangular per request */
+    /* Tabs — rectangular */
     .tabs{ display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:0 0 18px; }
     .tab{ padding:10px 18px; cursor:pointer; background:#fff; border-radius:0; border:1px solid #e5e7eb; transition:.25s; font-weight:600; color:#111827 }
     .tab:hover{ background:#f3f4f6; }
@@ -49,7 +49,7 @@
 
     .hidden{ display:none; }
 
-    /* Summary table (keep original layout) */
+    /* Summary table */
     .items-table{ width:100%; border-collapse:collapse; margin-bottom:14px; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; }
     .items-table thead{ background:var(--clr-primary); color:#fff; }
     .items-table th, .items-table td{ padding:10px; text-align:center; }
@@ -102,7 +102,7 @@
     <button id="pondCopy" class="copy-btn hidden">คัดลอกข้อความ</button>
   </div>
 
-  <!-- CANAL (คงเดิม) -->
+  <!-- CANAL -->
   <div class="container hidden" id="canalContainer">
     <form id="canalForm">
       <label>เลือกความหนา (มม.):</label>
@@ -117,6 +117,7 @@
       <input type="number" id="canalDepth" step="0.01" placeholder="กรอกความลึก (ถ้ามี)">
       <label><input type="checkbox" id="canalSpecialProvince" value="yes"> ส่งจังหวัดพัทลุง สตูล ปัตตานี ยะลา นราธิวาส (เพิ่ม 5 บาท/ตร.ม.)</label>
       <label><input type="checkbox" id="canalDiscount5" value="yes"> ใช้ส่วนลดพิเศษ 5%</label>
+      <label><input type="checkbox" id="canalFactoryBlue" value="yes"> เพจ "น้ำเงิน ราคาโรงงาน" (LDPE 0.5 = 50 บาท/ตร.ม.)</label>
 
       <button type="submit" class="btn-primary">คำนวณ</button>
       <button type="button" id="canalReset" class="btn-warning hidden">คำนวณใหม่</button>
@@ -126,7 +127,7 @@
     <button id="canalCopy" class="copy-btn hidden">คัดลอกข้อความ</button>
   </div>
 
-  <!-- CIRCULAR (คงเดิม) -->
+  <!-- CIRCULAR -->
   <div class="container hidden" id="circularContainer">
     <form id="circularForm">
       <label>เลือกเส้นผ่านศูนย์กลาง (เมตร):</label>
@@ -168,7 +169,7 @@
 
       <label style="margin-top:14px"><input type="checkbox" id="summarySpecial"> จังหวัดพิเศษ (+5 บาท/ตร.ม. สูงสุด 1,500 บาท)</label>
       <label><input type="checkbox" id="summaryDiscount5"> ใช้ส่วนลดพิเศษ 5%</label>
-      <label><input type="checkbox" id="summaryFactoryBlue"> เพจ "น้ำเงิน ราคาโรงงาน" (ใช้ราคา 40/60/80 บาท/ตร.ม.)</label>
+      <label><input type="checkbox" id="summaryFactoryBlue"> เพจ "น้ำเงิน ราคาโรงงาน" (0.3L=40, 0.5L=50, 0.5H=60, 0.75H=80 บาท/ตร.ม.)</label>
 
       <label>เลือกเพจ</label>
       <select id="pageSelect">
@@ -199,7 +200,7 @@
         <option value="pekky">pekky</option>
         <option value="พลอย">พลอย</option>
         <option value="แจม">แจม</option>
-        <option value="ใยฝ้าย">แจม</option>
+        <option value="ใยฝ้าย">ใยฝ้าย</option>
       </select>
 
       <button type="submit" class="btn-primary" style="margin-top:20px">ยืนยันสรุปออเดอร์</button>
@@ -223,7 +224,6 @@
 
     // --- Pricing helpers ---
     function getPondPriceList(isFactory){
-      // Return price per sqm by thickness for POND
       if(isFactory){
         return { '0.3':{price:40, material:'LDPE'}, '0.5':{price:60, material:'HDPE'}, '0.75':{price:80, material:'HDPE'} };
       }
@@ -284,7 +284,7 @@
     pondCopy.onclick = ()=>{ pondResult.select(); document.execCommand('copy'); alert('คัดลอกข้อความแล้ว'); };
     pondReset.onclick = ()=>{ pondForm.reset(); pondResult.value=''; pondCopy.classList.add('hidden'); pondReset.classList.add('hidden'); };
 
-    // ---------- CANAL LOGIC (คงเดิม) ----------
+    // ---------- CANAL LOGIC ----------
     const canalForm = document.getElementById('canalForm');
     const canalWidth = document.getElementById('canalWidth');
     const canalLength = document.getElementById('canalLength');
@@ -295,6 +295,7 @@
     const canalSizeRadios = document.querySelectorAll('input[name="canalSize"]');
     const canalSpecialProvince = document.getElementById('canalSpecialProvince');
     const canalDiscount5 = document.getElementById('canalDiscount5');
+    const canalFactoryBlue = document.getElementById('canalFactoryBlue');
 
     canalSizeRadios.forEach(r=>r.addEventListener('change',()=>{ if(r.value==='0.5'){ canalWidth.value=4; canalWidth.disabled=true; } else { canalWidth.disabled=false; } }));
 
@@ -304,16 +305,20 @@
       let w = parseFloat(canalWidth.value), l = parseFloat(canalLength.value), d = parseFloat(canalDepth.value || 0);
       if(!size || w<=0 || l<=0){ alert('กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง'); return; }
       const ow=w, ol=l; if(d>0){ w=w + d*2 + 1; l=l + d*2 + 1; }
-      const priceList = { '0.3':{price:50, material:'LDPE'}, '0.5':{price:60, material:'LDPE'} };
-      const area = w*l; let total = Math.floor(area * priceList[size.value].price);
+      const basePrice = 60; // LDPE 0.5 ปกติ
+      const pricePerSqm = (canalFactoryBlue && canalFactoryBlue.checked) ? 50 : basePrice; // เพจน้ำเงิน = 50
+      const mat = 'LDPE';
+
+      const area = w*l; let total = Math.floor(area * pricePerSqm);
       let discountAmount=0; if(canalDiscount5.checked){ discountAmount = Math.floor(total*0.05); total -= discountAmount; }
       let shipping = total<5000 ? 300 : 0; if(canalSpecialProvince.checked){ shipping += Math.floor(5*area); }
       const sum = Math.floor(total + shipping);
 
       let text = `📍 รายการ:\n`;
-      text += `ผ้าพลาสติก ${priceList[size.value].material} หนา ${size.value} มม. (${priceList[size.value].price} บาท/ตร.ม.)\n`;
+      text += `ผ้าพลาสติก ${mat} หนา 0.5 มม. (${pricePerSqm} บาท/ตร.ม.)\n`;
       text += `ขนาด ${ow} ม. × ${ol} ม.${d>0?` ลึก ${d} ม.`:''} = ${area.toLocaleString()} ตร.ม.\n(ขนาดผ้านี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 0.5 เมตรแล้ว)\n\n`;
       text += `📌 สรุปยอดสั่งซื้อทั้งหมด: ${sum.toLocaleString()} บาท\n`;
+      if(canalFactoryBlue && canalFactoryBlue.checked){ text += `(ราคาโรงงาน เพจน้ำเงิน)\n`; }
       if(canalDiscount5.checked){ text += `(ส่วนลดพิเศษ 5% = ${discountAmount.toLocaleString()} บาท)\n`; }
       text += `รบกวนลูกค้าตรวจสอบรายการให้ครบก่อนยืนยันนะคะ ✨\nหากเริ่มผลิตแล้ว จะไม่สามารถแก้ไขหรือยกเลิกได้ค่ะ\n\n`;
       if(shipping>0){ text += `ราคาผ้า ${total.toLocaleString()} บาท\nค่าจัดส่งรวม ${shipping.toLocaleString()} บาท\n`; } else { text += `(ส่งฟรี ชำระเงินเมื่อได้รับของค่ะ)\n`; }
@@ -324,14 +329,14 @@
       canalResult.value = text.trim(); canalCopy.classList.remove('hidden'); canalReset.classList.remove('hidden');
     };
     canalCopy.onclick = ()=>{ canalResult.select(); document.execCommand('copy'); alert('คัดลอกข้อความแล้ว'); };
-    canalReset.onclick = ()=>{ canalForm.reset(); canalWidth.disabled=false; canalResult.value=''; canalCopy.style.display='none'; canalReset.classList.add('hidden'); };
+    canalReset.onclick = ()=>{ canalForm.reset(); canalWidth.disabled=false; canalResult.value=''; canalCopy.classList.add('hidden'); canalReset.classList.add('hidden'); };
 
-    // ---------- CIRCULAR LOGIC (คงเดิม) ----------
+    // ---------- CIRCULAR LOGIC ----------
     const circularForm = document.getElementById('circularForm');
     const circularResult = document.getElementById('circularResult');
     const circularCopy = document.getElementById('circularCopy');
     const circularReset = document.getElementById('circularReset');
-    window.circularInfo = { '6':{volume:34000, price:39000}, '8':{volume:60000, price:50000}, '10':{volume:95000, price:63000}, '12':{volume:135000, price:72000} };
+    window.circularInfo = { '6':{volume:34000, price:35000}, '8':{volume:60000, price:50000}, '10':{volume:95000, price:63000}, '12':{volume:135000, price:72000} };
 
     circularForm.onsubmit = function(e){
       e.preventDefault();
@@ -375,12 +380,12 @@
     document.getElementById('summaryForm').onsubmit = (e)=>{
       e.preventDefault();
       const cust = document.getElementById('custInfo').value.trim();
-      const useFactory = document.getElementById('summaryFactoryBlue').checked;
+      const useFactory = document.getElementById('summaryFactoryBlue').checked; // เพจน้ำเงินราคาโรงงาน
       const useDiscount = document.getElementById('summaryDiscount5').checked;
 
-      // base price map (per sqm)
+      // ราคา/ตร.ม. ตามเพจ
       const PRICE = useFactory
-        ? { '0.3L':40, '0.5L':60, '0.5H':60, '0.75H':80 }
+        ? { '0.3L':40, '0.5L':50, '0.5H':60, '0.75H':80 }
         : { '0.3L':50, '0.5L':60, '0.5H':65, '0.75H':85 };
 
       const MAT = c => c.endsWith('L')?'LDPE':'HDPE';
@@ -398,7 +403,7 @@
         if(w<=0 || l<=0 || q<=0) return;
         let aw=w, al=l; if(d>0){ const pad=isCanal?1:2; aw=w+d*2+pad; al=l+d*2+pad; }
         let pricePer = PRICE[code];
-        if(isCanal) pricePer = Math.floor(pricePer * 1.05); // +5% canal
+        if(isCanal) pricePer = Math.floor(pricePer * 1.05); // +5% คลองไส้ไก่
         const area = aw*al; const cost = Math.floor(area * pricePer * q);
         total += cost; areaSum += area*q;
         list += `📍 รายการ ${idx}:\nผ้าพลาสติก ${MAT(code)} หนา ${THK(code)} มม. (${pricePer} บาท/ตร.ม.)\nผ้าขนาด ${aw} × ${al} ม. = ${fmt(area)} ตร.ม.\nราคาผ้า ${fmt(cost)} บาท\n`;
@@ -408,7 +413,7 @@
       if(total===0) return alert('กรุณากรอกอย่างน้อย 1 รายการ');
 
       let discountAmount=0; if(useDiscount){ discountAmount=Math.floor(total*0.05); total-=discountAmount; }
-      let ship = total<5000?300:0; if(document.getElementById('summarySpecial').checked){ const ex=Math.floor(areaSum*5); ship += ex>2000?2000:ex; }
+      let ship = total<5000?300:0; if(document.getElementById('summarySpecial').checked){ const ex=Math.floor(areaSum*5); ship += ex>1500?1500:ex; }
       const grand = Math.floor(total+ship); const dep = grand>=5000?Math.floor(grand*0.1):0; const bal = grand-dep;
 
       let out = cust?`ส่ง\n${cust}\n\n${list}`:list;
@@ -430,11 +435,9 @@
     // --- quick smoke tests ---
     (function runTests(){
       console.log('[TEST] pondWidth exist =>', !!document.getElementById('pondWidth'));
-      console.log('[TEST] price switch ok =>', getPondPriceList(true)['0.3'].price===40 && getPondPriceList(false)['0.75'].price===85);
+      console.log('[TEST] canal Blue=50 OK =>', (document.getElementById('canalFactoryBlue')?true:false));
+      console.log('[TEST] summary Blue map =>', (document.getElementById('summaryFactoryBlue')?true:false));
     })();
   </script>
 </body>
 </html>
-
-
-
