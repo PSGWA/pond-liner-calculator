@@ -227,7 +227,7 @@
       if(isFactory){
         return { '0.3':{price:40, material:'LDPE'}, '0.5':{price:60, material:'HDPE'}, '0.75':{price:80, material:'HDPE'} };
       }
-      return { '0.3':{price:50, material:'LDPE'}, '0.5':{price:65, material:'HDPE'}, '0.75':{price:85, material:'HDPE'} };
+      return { '0.3':{price:40, material:'LDPE'}, '0.5':{price:65, material:'HDPE'}, '0.75':{price:85, material:'HDPE'} };
     }
 
     // ---------- POND LOGIC ----------
@@ -386,7 +386,7 @@
       // ราคา/ตร.ม. ตามเพจ
       const PRICE = useFactory
         ? { '0.3L':40, '0.5L':50, '0.5H':60, '0.75H':80 }
-        : { '0.3L':50, '0.5L':60, '0.5H':65, '0.75H':85 };
+        : { '0.3L':40, '0.5L':60, '0.5H':65, '0.75H':85 };
 
       const MAT = c => c.endsWith('L')?'LDPE':'HDPE';
       const THK = c => c.replace(/[LH]$/, '');
@@ -441,3 +441,4 @@
   </script>
 </body>
 </html>
+
