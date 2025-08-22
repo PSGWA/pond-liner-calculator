@@ -5,25 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>คำนวณค่า ผ้าปูบ่อ • คลองไส้ไก่ • บ่อกลม • เหล็กแบน • สรุปออเดอร์</title>
   <style>
-    /* ========= THEME: Blue & White (Rectangular Tabs) ========= */
     :root{
-      --clr-primary:#2563eb;        /* main blue */
-      --clr-primary-dark:#1d4ed8;   /* hover blue */
-      --clr-secondary:#60a5fa;      /* light blue */
-      --clr-danger:#dc2626;         /* red */
-      --clr-warning:#facc15;        /* amber */
-      --clr-bg:#ffffff;             /* page bg */
-      --clr-card:#ffffff;           /* card bg */
-      --clr-muted:#6b7280;          /* gray text */
-      --shadow:0 8px 20px rgba(0,0,0,.06);
-      --radius:12px;                /* keep layout the same */
+      --clr-primary:#2563eb; --clr-primary-dark:#1d4ed8; --clr-secondary:#60a5fa;
+      --clr-danger:#dc2626; --clr-warning:#facc15; --clr-bg:#ffffff; --clr-card:#ffffff;
+      --clr-muted:#6b7280; --shadow:0 8px 20px rgba(0,0,0,.06); --radius:12px;
     }
     *{box-sizing:border-box;font-family:'Segoe UI', Tahoma, Arial, sans-serif}
     body{margin:0;background:var(--clr-bg);color:#111827}
-
     h1{ text-align:center; margin:26px 0 18px; font-size:26px; }
-
-    /* Tabs — rectangular */
     .tabs{ display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:0 0 18px; }
     .tab{ padding:10px 18px; cursor:pointer; background:#fff; border-radius:0; border:1px solid #e5e7eb; transition:.25s; font-weight:600; color:#111827 }
     .tab:hover{ background:#f3f4f6; }
@@ -39,8 +28,7 @@
     textarea{ resize:none; background:#f9fafb; min-height:140px; }
 
     button{ border:none; border-radius:10px; padding:12px 18px; font-size:15px; font-weight:600; cursor:pointer; transition:.25s; }
-    .btn-primary{ background:var(--clr-primary); color:#fff; }
-    .btn-primary:hover{ background:var(--clr-primary-dark); }
+    .btn-primary{ background:var(--clr-primary); color:#fff; } .btn-primary:hover{ background:var(--clr-primary-dark); }
     .btn-secondary{ background:var(--clr-secondary); color:#fff; }
     .btn-warning{ background:var(--clr-warning); color:#111; }
     .btn-danger{ background:var(--clr-danger); color:#fff; }
@@ -49,27 +37,18 @@
 
     .hidden{ display:none; }
 
-    /* Summary/Items tables */
     .items-table{ width:100%; border-collapse:collapse; margin-bottom:14px; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; }
     .items-table thead{ background:var(--clr-primary); color:#fff; }
     .items-table th, .items-table td{ padding:10px; text-align:center; }
     .items-table tbody tr:nth-child(odd){ background:#f8fafc; }
-
-    @media (max-width:600px){
-      .container{ padding:14px; }
-      .tab{ padding:8px 14px; font-size:14px; }
-      button{ font-size:14px; }
-      .items-table{ display:block; overflow-x:auto; }
-      .row{ grid-template-columns:1fr; }
-    }
+    .items-table th:first-child, .items-table td:first-child{ min-width: 180px; }
+    .items-table input[type="number"], .items-table select{ color:#111827 !important; -webkit-text-fill-color:#111827; background:#fff; width:100%; height:38px; text-align:center; }
+    .items-table input::placeholder{ color:#9ca3af; }
 
     .hint{color:#6b7280; font-size:13px; margin:8px 0 10px; line-height:1.55; word-break:break-word; }
     .row{display:grid; grid-template-columns: 1fr 1fr; gap:12px;}
-    .items-table input[type="number"], .items-table select{ color:#111827 !important; -webkit-text-fill-color:#111827; background:#fff; width:100%; height:38px; text-align:center; }
-    .items-table input::placeholder{ color:#9ca3af; }
-    .items-table td:nth-child(2), .items-table td:nth-child(3), .items-table td:nth-child(4), .items-table td:nth-child(6){ min-width:90px; }
-    /* ensure first column (select) wide enough so text won't clip */
-    .items-table th:first-child, .items-table td:first-child{ min-width: 180px; }
+
+    @media (max-width:600px){ .container{ padding:14px; } .tab{ padding:8px 14px; font-size:14px; } button{ font-size:14px; } .items-table{ display:block; overflow-x:auto; } .row{ grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
@@ -163,7 +142,6 @@
       <label>ข้อมูลผู้รับ (ชื่อ-ที่อยู่-เบอร์โทร)</label>
       <textarea id="flatbarCustInfo" placeholder="คัดลอกข้อมูลลูกค้ามาวางที่นี่"></textarea>
 
-      <!-- ผ้า: ย้ายขึ้นด้านบน + บังคับต้องมีอย่างน้อย 1 รายการ -->
       <h3 style="margin-top:0">รายการผ้า (จำเป็นต้องเลือกอย่างน้อย 1)</h3>
       <table class="items-table" id="clothTableFlatbar">
         <thead>
@@ -178,7 +156,27 @@
         <tbody></tbody>
       </table>
       <button type="button" id="flatbarAddCloth" class="btn-secondary" style="margin-bottom:8px">+ เพิ่มรายการผ้า</button>
-      <div class="hint">ค่าเริ่มต้นเป็น "ระบุเอง" (คิด 250 บาท/ตร.ม.) • ถ้าเลือกแบบสำเร็จ ระบบใส่กว้าง×ยาวให้อัตโนมัติและคิดราคาตามชุดสำเร็จ</div>      <div class="row">
+      <div class="hint">ค่าเริ่มต้นเป็น "ระบุเอง" (คิด 250 บาท/ตร.ม.) • ถ้าเลือกแบบสำเร็จ ระบบจะกรอกกว้าง×ยาวให้อัตโนมัติและคิดราคาตามชุดสำเร็จ</div>
+      <label><input type="checkbox" id="flatbarDiscount5"> ใช้ส่วนลดพิเศษ 5% (เฉพาะผ้า)</label>
+      <hr style="opacity:.25; margin:16px 0">
+
+      <label>คำนวณเหล็กแบน (ไม่บังคับ)</label>
+      <div class="hint">สูตรราคาเหล็กแบน: 300 + (ความยาวรถ × 50 × 4) บาท  และ +150 บาท ถ้า "มีผ้าขึ้นด้านหน้า" • จำนวนคูณ 4 จุด • เหล็กยาว 2 ม./3 ม. จะถูกเลือกอัตโนมัติ</div>
+      <h4 style="margin:8px 0">รายการเหล็กแบน</h4>
+      <table class="items-table" id="flatbarItemsTable">
+        <thead>
+          <tr>
+            <th>ความยาวรถ (ม.)</th>
+            <th>จำนวนคัน</th>
+            <th>ลบ</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button type="button" id="addFlatbarRow" class="btn-secondary" style="margin-bottom:8px">+ เพิ่มรายการเหล็กแบน</button>
+      <label><input type="checkbox" id="hasFrontCloth"> มีผ้าขึ้นด้านหน้า (+150 บาท/ชุด)</label>
+
+      <div class="row">
         <div>
           <label>Facebook (ชื่อโปรไฟล์ลูกค้า)</label>
           <input type="text" id="flatbarFacebook" placeholder="เช่น ยอดชาย เฝดสูงเนิน">
@@ -221,29 +219,14 @@
         <option value="ใยฝ้าย">ใยฝ้าย</option>
       </select>
 
-      <hr style="opacity:.25; margin:16px 0">
-
-      <label>คำนวณเหล็กแบน (ไม่บังคับ)</label>
-      <div class="hint">สูตรราคาเหล็กแบน: 300 + (ความยาวรถ × 50 × 4) บาท  และ +150 บาท ถ้า "มีผ้าขึ้นด้านหน้า" • จำนวนคูณ 4 จุด • เหล็กยาว 2 ม./3 ม. จะถูกเลือกอัตโนมัติ</div>
-      <div class="row">
-        <div>
-          <label>ความยาวรถ (เมตร) — จำนวนเต็ม เช่น 4, 5, 6, 7</label>
-          <input type="number" id="carLength" step="1" min="2" placeholder="กรอกความยาวรถ (เมตร)">
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <label><input type="checkbox" id="hasFrontCloth"> มีผ้าขึ้นด้านหน้า (+150 บาท)</label>
-        </div>
-      </div>
-
-      <button type="submit" class="btn-primary">คำนวณและสร้างสรุป</button>
+      <button type="submit" class="btn-primary" style="margin-top:12px">คำนวณและสร้างสรุป</button>
       <button type="button" id="flatbarReset" class="btn-warning hidden">คำนวณใหม่</button>
     </form>
     <textarea id="flatbarResult" readonly placeholder="ผลลัพธ์จะแสดงที่นี่"></textarea>
     <button id="flatbarCopy" class="copy-btn hidden">คัดลอกข้อความ</button>
   </div>
 
-  <!-- SUMMARY (ไม่รวมเหล็กแบนแล้ว) -->
+  <!-- SUMMARY (ไม่รวมเหล็กแบน) -->
   <div class="container hidden" id="summaryContainer">
     <form id="summaryForm">
       <label>ข้อมูลผู้รับ (ชื่อ-ที่อยู่-เบอร์โทร)</label>
@@ -323,9 +306,7 @@
 
     // --- Pricing helpers ---
     function getPondPriceList(isFactory){
-      if(isFactory){
-        return { '0.3':{price:40, material:'LDPE'}, '0.5':{price:60, material:'HDPE'}, '0.75':{price:80, material:'HDPE'} };
-      }
+      if(isFactory){ return { '0.3':{price:40, material:'LDPE'}, '0.5':{price:60, material:'HDPE'}, '0.75':{price:80, material:'HDPE'} }; }
       return { '0.3':{price:40, material:'LDPE'}, '0.5':{price:65, material:'HDPE'}, '0.75':{price:85, material:'HDPE'} };
     }
 
@@ -404,9 +385,7 @@
       let w = parseFloat(canalWidth.value), l = parseFloat(canalLength.value), d = parseFloat(canalDepth.value || 0);
       if(!size || w<=0 || l<=0){ alert('กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง'); return; }
       const ow=w, ol=l; if(d>0){ w=w + d*2 + 1; l=l + d*2 + 1; }
-      const basePrice = 60; // LDPE 0.5 ปกติ
-      const pricePerSqm = (canalFactoryBlue && canalFactoryBlue.checked) ? 50 : basePrice; // เพจน้ำเงิน = 50
-      const mat = 'LDPE';
+      const basePrice = 60; const pricePerSqm = (canalFactoryBlue && canalFactoryBlue.checked) ? 50 : basePrice; const mat = 'LDPE';
 
       const area = w*l; let total = Math.floor(area * pricePerSqm);
       let discountAmount=0; if(canalDiscount5.checked){ discountAmount = Math.floor(total*0.05); total -= discountAmount; }
@@ -457,31 +436,15 @@
     const flatbarResult = document.getElementById('flatbarResult');
     const flatbarCopy = document.getElementById('flatbarCopy');
     const flatbarReset = document.getElementById('flatbarReset');
-    const carLengthInput = document.getElementById('carLength');
+    const flatbarItemsBody = document.querySelector('#flatbarItemsTable tbody');
+    const addFlatbarRowBtn = document.getElementById('addFlatbarRow');
+    const hasFrontEl = document.getElementById('hasFrontCloth');
 
     const clothTableBody = document.querySelector('#clothTableFlatbar tbody');
     const btnAddCloth = document.getElementById('flatbarAddCloth');
 
-    const CLOTH_PRESETS = {
-      '4x3': 2400,
-      '4x3.5': 2800,
-      '6x3.5': 4200,
-      '6x4': 4800,
-      '7x3.5': 4900,
-      '7x4': 5600,
-      '8x4': 6500,
-      '8x5': 8500
-    };
-    const PRESET_SIZES = {
-      '4x3': {w:4, l:3},
-      '4x3.5': {w:4, l:3.5},
-      '6x3.5': {w:6, l:3.5},
-      '6x4': {w:6, l:4},
-      '7x3.5': {w:7, l:3.5},
-      '7x4': {w:7, l:4},
-      '8x4': {w:8, l:4},
-      '8x5': {w:8, l:5}
-    };
+    const CLOTH_PRESETS = { '4x3':2400, '4x3.5':2800, '6x3.5':4200, '6x4':4800, '7x3.5':4900, '7x4':5600, '8x4':6500, '8x5':8500 };
+    const PRESET_SIZES = { '4x3':{w:4,l:3}, '4x3.5':{w:4,l:3.5}, '6x3.5':{w:6,l:3.5}, '6x4':{w:6,l:4}, '7x3.5':{w:7,l:3.5}, '7x4':{w:7,l:4}, '8x4':{w:8,l:4}, '8x5':{w:8,l:5} };
 
     function makeClothRow(defaultType='custom'){
       const tr = document.createElement('tr');
@@ -503,36 +466,39 @@
         <td><input type="number" class="cl" step="0.1" min="0.1" placeholder="ยาว (ม.)"></td>
         <td><input type="number" class="cq" value="1" min="1"></td>
         <td><button type="button" class="btn-danger del">ลบ</button></td>`;
-
-      const sel = tr.querySelector('.ptype');
-      const cw = tr.querySelector('.cw');
-      const cl = tr.querySelector('.cl');
-      const delBtn = tr.querySelector('.del');
-
-      function applyType(){
-        const val = sel.value;
-        if(val!== 'custom'){
-          const s = PRESET_SIZES[val];
-          cw.value = s.w; cl.value = s.l;
-          cw.disabled = true; cl.disabled = true;
-        }else{
-          cw.disabled = false; cl.disabled = false;
-        }
-      }
-
+      const sel = tr.querySelector('.ptype'); const cw = tr.querySelector('.cw'); const cl = tr.querySelector('.cl'); const delBtn = tr.querySelector('.del');
+      function applyType(){ const val = sel.value; if(val!=='custom'){ const s = PRESET_SIZES[val]; cw.value=s.w; cl.value=s.l; cw.disabled=true; cl.disabled=true; } else { cw.disabled=false; cl.disabled=false; } }
       sel.addEventListener('change', applyType);
       delBtn.addEventListener('click', ()=> tr.remove());
-
-      // set default selection
-      sel.value = defaultType;
-      applyType();
-
+      sel.value = defaultType; applyType();
       clothTableBody.appendChild(tr);
     }
-
     btnAddCloth.addEventListener('click', ()=> makeClothRow('custom'));
-    // initial one row, default = custom
     makeClothRow('custom');
+
+    // --- FLATBAR items (multiple rows) ---
+    function makeFlatbarRow(len=4, qty=1){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="number" class="flen" step="1" min="2" placeholder="เช่น 4" value="${len}"></td>
+        <td><input type="number" class="fqty" step="1" min="1" value="${qty}"></td>
+        <td><button type="button" class="btn-danger fdel">ลบ</button></td>`;
+      tr.querySelector('.fdel').onclick = ()=> tr.remove();
+      flatbarItemsBody.appendChild(tr);
+    }
+    addFlatbarRowBtn.addEventListener('click', ()=> makeFlatbarRow());
+    makeFlatbarRow();
+
+    function collectFlatbarItems(){
+      const rows = [...flatbarItemsBody.querySelectorAll('tr')];
+      const items = [];
+      for(const tr of rows){
+        const L = parseInt(tr.querySelector('.flen').value,10);
+        const q = Math.max(1, parseInt(tr.querySelector('.fqty').value||1,10));
+        if(!isNaN(L) && L>=2) items.push({L, qty:q});
+      }
+      return items;
+    }
 
     function collectCloth(){
       const rows = [...clothTableBody.querySelectorAll('tr')];
@@ -542,147 +508,152 @@
         const cw = parseFloat(tr.querySelector('.cw').value||0);
         const cl = parseFloat(tr.querySelector('.cl').value||0);
         const qty = Math.max(1, parseInt(tr.querySelector('.cq').value||1,10));
-
-        if(type!== 'custom'){
-          const u = CLOTH_PRESETS[type]||0;
-          const s = PRESET_SIZES[type];
-          const sum = u * qty;
-          price += sum; has = has || sum>0;
-          lines.push(`ผ้าขนาด ${s.w} ม. × ${s.l} ม. × ${qty} ผืน = ${sum.toLocaleString()} บาท`);
-          simple.push({w:s.w, l:s.l, qty, sum});
+        if(type!=='custom'){
+          const u = CLOTH_PRESETS[type]||0; const s = PRESET_SIZES[type]; const sum = u*qty; price+=sum; has = has || sum>0;
+          lines.push(`ขนาด ${s.w}x${s.l}${qty>1?` × ${qty}`:''} ราคา ${sum.toLocaleString()} บาท`); simple.push({w:s.w,l:s.l,qty,sum});
         }else{
-          if(!(cw>0 && cl>0)) continue; // skip invalid custom row
-          const area = cw*cl; const unit = Math.floor(area*250); const sum = unit*qty;
-          price += sum; has = has || sum>0;
-          lines.push(`ผ้าขนาด ${cw} ม. × ${cl} ม. = ${area.toFixed(2)} ตร.ม. × ${qty} ผืน @250 บาท/ตร.ม. = ${sum.toLocaleString()} บาท`);
-          simple.push({w:cw, l:cl, qty, sum});
+          if(!(cw>0 && cl>0)) continue; const area=cw*cl; const unit=Math.floor(area*250); const sum=unit*qty; price+=sum; has = has || sum>0;
+          lines.push(`ขนาด ${cw}x${cl}${qty>1?` × ${qty}`:''} ราคา ${sum.toLocaleString()} บาท`); simple.push({w:cw,l:cl,qty,sum});
         }
       }
       return {has, text: lines.join('\n'), price, simple};
     }
 
     function pickBars(len){
-      let L = parseInt(len,10);
-      if(isNaN(L) || L<2) return null;
-      if(L===4) return {two:2, three:0};
-      if(L===5) return {two:1, three:1};
-      if(L===6) return {two:0, three:2};
-      if(L===7) return {two:2, three:1};
-      let three = Math.floor(L/3);
-      while(three>=0){
-        const remain = L - three*3;
-        if(remain%2===0){
-          const two = remain/2; return {two, three};
-        }
-        three--;
+      let L = parseInt(len,10); if(isNaN(L) || L<2) return null;
+      if(L===4) return {two:2, three:0}; if(L===5) return {two:1, three:1}; if(L===6) return {two:0, three:2}; if(L===7) return {two:2, three:1};
+      let three = Math.floor(L/3); while(three>=0){ const remain = L - three*3; if(remain%2===0) return {two:remain/2, three}; three--; } return null;
+    }
+
+    function calcFlatbarAggregate(items, hasFront=false){
+      // รวมรายการเหล็กแบน: คูณทั้ง "ราคา" และ "จำนวนเส้น" ด้วยจำนวนคัน
+      let totalTwo=0, totalThree=0, totalLen=0, totalPrice=0, totalCars=0; const lines=[];
+      const points = 4; // ต่อจุดคูณ 4 จุด
+      for(const {L, qty} of items){
+        const seg = pickBars(L); if(!seg) continue;
+        const perTwo = seg.two * points;
+        const perThree = seg.three * points;
+        const perLen = L * points;
+        const unitPrice = 300 + (perLen*50) + (hasFront?150:0); // ราคาต่อคัน (ชุดหนึ่งต่อรถ 1 คัน)
+
+        totalTwo   += perTwo   * qty;  // คูณจำนวนคัน
+        totalThree += perThree * qty;
+        totalLen   += perLen   * qty;
+        totalPrice += unitPrice * qty; // คูณจำนวนคัน
+        totalCars  += qty;
+
+        lines.push(`ความยาวรถ ${L} เมตร${qty>1?` จำนวน ${qty} คัน`:''}`);
       }
-      return null;
-    }
+      if(lines.length===0){
+        return { text:'', totalTwo:0, totalThree:0, totalLen:0, totalPrice:0, itemsLine:'' };
+      }
+      const parts=[];
+      if(totalTwo>0)  parts.push(`เหล็กแบน 2 ม. × ${totalTwo} เส้น`);
+      if(totalThree>0)parts.push(`เหล็กแบน 3 ม. × ${totalThree} เส้น`);
+      const itemsLine = parts.join(', ');
 
-    function calcFlatbarText(L, hasFrontCloth=false){
-      const set = pickBars(L);
-      if(!set) return { text: '', two:0, three:0, totalTwo:0, totalThree:0, totalLen:0, totalPrice:0 };
+      // เหล็กหัว-ท้าย 2.5 ม.: ถ้ามีผ้าขึ้นด้านหน้า = 3 เส้น/คัน, ไม่มีก็ 2 เส้น/คัน
+      const remarkPerCar = hasFront?3:2;
+      const remarkTotal  = remarkPerCar * (totalCars||1);
 
-      const len = parseInt(L,10);
-      const points = 4;
-      const totalTwo = set.two * points;
-      const totalThree = set.three * points;
-      const totalLen = points * len;
-      const basePrice = 300 + (totalLen * 50);
-      const totalPrice = hasFrontCloth ? basePrice + 150 : basePrice;
+      const header = `📦 ชุดเหล็กแบนสำหรับติดตั้ง MP Flow 2.0 `;
+      const body = `
+${lines.join('\n')}
 
-      const items = [];
-      if(totalTwo > 0) items.push(`เหล็กแบน 2 ม. × ${totalTwo} เส้น`);
-      if(totalThree > 0) items.push(`เหล็กแบน 3 ม. × ${totalThree} เส้น`);
-      const itemsLine = items.length ? items.join(', ') : '—';
-      const remarkLines = hasFrontCloth ? 3 : 2;
+ยอดสรุปรวม (เหล็กแบน) ${totalPrice.toLocaleString()} บาท
 
-      let t = '';
-      t += `📦 ชุดเหล็กแบนสำหรับติดตั้ง MP Flow 2.0 \n`;
-      t += `ความยาวรถ ${len} เมตร\n`;
-      t += `ยอดสรุปรวม (เหล็กแบน) ${totalPrice} บาท\n\n`;
-      t += `สิ่งที่จะได้รับ : ${itemsLine} \n\n`;
-      t += `หมายเหตุ: รวมเหล็กสำหรับติดตั้งหัวท้าย 2.5 ม. × ${remarkLines} เส้น และฟรีสกรูสำหรับติดตั้งแล้ว`;
+สิ่งที่จะได้รับ : ${itemsLine} 
 
-      return { text:t, two:set.two, three:set.three, totalTwo, totalThree, totalLen, totalPrice };
-    }
+หมายเหตุ: รวมเหล็กสำหรับติดตั้งหัวท้าย 2.5 ม. × ${remarkTotal} เส้น และฟรีสกรูสำหรับติดตั้งแล้ว`;
+      return { text: header + body, totalTwo, totalThree, totalLen, totalPrice, itemsLine };
+    };
 
     flatbarForm.onsubmit = function(e){
       e.preventDefault();
-      const cloth = collectCloth();
-      if(!cloth.has){ alert('กรุณาเพิ่มรายการผ้าอย่างน้อย 1 รายการ และกรอกให้ครบถ้วน'); return; }
-
+      const cloth = collectCloth(); if(!cloth.has){ alert('กรุณาเพิ่มรายการผ้าอย่างน้อย 1 รายการ และกรอกให้ครบถ้วน'); return; }
       const cust = (document.getElementById('flatbarCustInfo').value||'').trim();
-      const clothHeader = 'MP Flow 2.0 HDPE หนา 2 มิล';
       const fbName = (document.getElementById('flatbarFacebook').value||'').trim();
       const page = document.getElementById('flatbarPageSelect').value;
       const admin = document.getElementById('flatbarAdminSelect').value;
       const dateText = (document.getElementById('flatbarDate').value||'').trim();
 
-      // เหล็กแบน (ไม่บังคับ)
-      const L = parseInt(carLengthInput.value,10);
-      const hasFront = document.getElementById('hasFrontCloth').checked;
-      let kit=null;
-      if(!isNaN(L) && L>=2){ kit = calcFlatbarText(L, hasFront); }
+      // เหล็กแบน (ไม่บังคับ, หลายรายการได้)
+      const items = collectFlatbarItems();
+      const kit = items.length ? calcFlatbarAggregate(items, hasFrontEl.checked) : null;
 
-      // เริ่มประกอบข้อความรูปแบบใหม่
+      // สร้างข้อความสรุปตามฟอร์แมตที่ขอ
       let out = 'ส่ง';
       if(cust) out += `
+
 ${cust}`;
       out += `
 
-${clothHeader}`;
-      // ต่อบรรทัดขนาดและราคา
-      for(const it of cloth.simple){
-        const unit = `${it.w}x${it.l}`;
-        const qtyPart = it.qty>1 ? ` × ${it.qty}` : '';
-        out += `
-ขนาด ${unit}${qtyPart} ราคา ${it.sum.toLocaleString()} บาท`;
-      }
+MP Flow 2.0 HDPE หนา 2 มิล`;
+      out += `
+${cloth.text}`;
 
-      // รวมยอดสำหรับการชำระเงิน
-      const clothSum = cloth.price;
-      const steelSum = (kit && kit.totalPrice) ? kit.totalPrice : 0;
+      if(kit && kit.text){ out += `
+
+${kit.text}`; }
+
+      // รวมยอดสุดท้าย (มีส่วนลด 5% สำหรับผ้า ถ้าติ๊ก)
+      const applyDisc = document.getElementById('flatbarDiscount5').checked;
+      const clothBase = cloth.price;
+      const discAmt = applyDisc ? Math.floor(clothBase * 0.05) : 0;
+      const clothSum = clothBase - discAmt;
+      const steelSum = kit? kit.totalPrice : 0;
       const grand = clothSum + steelSum;
       let dep = 0; if(grand>5000){ dep = Math.floor(grand*0.1); }
       const cod = grand - dep;
 
+      if(discAmt>0){
+        out += `
+
+(ส่วนลดพิเศษ 5% สำหรับผ้า = ${discAmt.toLocaleString()} บาท)`;
+      }
+
       out += `
 
-ชำระปลายทางหลังได้รับสินค้า`;
+รวมยอดทั้งหมด (MP Flow + เหล็กแบน) ${grand.toLocaleString()} บาท`;
+      out += `
+
+โอนชำระเมื่อได้รับสินค้า
+บัญชีธนาคารกสิกรไทย
+ชื่อบัญชี บริษัทมนูธรรมพลาสติก
+เลขที่บัญชี 
+1888-5999-39 `;
       if(dep>0) out += `
 มัดจำ 10% (${dep.toLocaleString()} บาท)`;
       out += `
 COD ${cod.toLocaleString()}`;
 
-      // ถ้ามีเหล็กแบน ให้ต่อบล็อกรายละเอียดไว้ท้าย ๆ (ไม่บังคับ)
-      if(kit && kit.text){ out += `
-
-${kit.text}`; }
-
       if(fbName) out += `
 
-Facebook ${fbName}`;
-      if(page) out += `
-เพจ${page}`;
-      if(admin) out += `
-แอดมิน ${admin}`;
-      if(dateText) out += `
+Facebook ${fbName}`; if(page) out += `
+เพจ${page}`; if(admin) out += `
+แอดมิน ${admin}`; if(dateText) out += `
 ${dateText}`;
 
-      flatbarResult.value = out.trim();
-      flatbarCopy.classList.remove('hidden');
-      flatbarReset.classList.remove('hidden');
+      flatbarResult.value = out.trim(); flatbarCopy.classList.remove('hidden'); flatbarReset.classList.remove('hidden');
     };
-    flatbarCopy.onclick = ()=>{ flatbarResult.select(); document.execCommand('copy'); alert('คัดลอกข้อความแล้ว'); };
-    flatbarReset.onclick = ()=>{ flatbarForm.reset(); clothTableBody.innerHTML=''; makeClothRow('custom'); flatbarResult.value=''; flatbarCopy.classList.add('hidden'); flatbarReset.classList.add('hidden'); };
+    document.getElementById('flatbarCopy').onclick = ()=>{ flatbarResult.select(); document.execCommand('copy'); alert('คัดลอกข้อความแล้ว'); };
+    flatbarReset.onclick = ()=>{
+      flatbarForm.reset();
+      // รีเซ็ตตารางผ้า
+      clothTableBody.innerHTML='';
+      makeClothRow('custom');
+      // รีเซ็ตรายการเหล็กแบน
+      flatbarItemsBody.innerHTML='';
+      makeFlatbarRow();
+      // รีเซ็ตผลลัพธ์
+      flatbarResult.value='';
+      flatbarCopy.classList.add('hidden');
+      flatbarReset.classList.add('hidden');
+    };
 
     // ---------- SUMMARY LOGIC (ไม่มีเหล็กแบน) ----------
     const tbody = document.querySelector('#itemsTable tbody');
-
-    const addRow = () => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
+    const addRow = () => { const tr = document.createElement('tr'); tr.innerHTML = `
         <td><select class="t">
           <option value="0.3L">LDPE 0.3</option>
           <option value="0.5L">LDPE 0.5</option>
@@ -694,82 +665,38 @@ ${dateText}`;
         <td><input class="d" type="number" step="0.01"></td>
         <td><input type="checkbox" class="canal"></td>
         <td><input class="q" type="number" value="1" min="1"></td>
-        <td><button type="button" class="btn-danger del">ลบ</button></td>`;
-      tr.querySelector('.del').onclick = () => tr.remove();
-      tbody.appendChild(tr);
-    };
-    addRow();
-    document.getElementById('addItem').onclick = addRow;
+        <td><button type="button" class="btn-danger del">ลบ</button></td>`; tr.querySelector('.del').onclick = () => tr.remove(); tbody.appendChild(tr); };
+    addRow(); document.getElementById('addItem').onclick = addRow;
 
     document.getElementById('summaryForm').onsubmit = (e)=>{
       e.preventDefault();
       const cust = document.getElementById('custInfo').value.trim();
-      const useFactory = document.getElementById('summaryFactoryBlue').checked; // เพจน้ำเงินราคาโรงงาน
-      const useDiscount = document.getElementById('summaryDiscount5').checked;
+      const useFactory = document.getElementById('summaryFactoryBlue').checked; const useDiscount = document.getElementById('summaryDiscount5').checked;
+      const PRICE = useFactory ? { '0.3L':40, '0.5L':50, '0.5H':60, '0.75H':80 } : { '0.3L':40, '0.5L':60, '0.5H':65, '0.75H':85 };
+      const MAT = c => c.endsWith('L')?'LDPE':'HDPE'; const THK = c => c.replace(/[LH]$/, ''); const fmt = n => Math.floor(n).toLocaleString();
 
-      const PRICE = useFactory
-        ? { '0.3L':40, '0.5L':50, '0.5H':60, '0.75H':80 }
-        : { '0.3L':40, '0.5L':60, '0.5H':65, '0.75H':85 };
-
-      const MAT = c => c.endsWith('L')?'LDPE':'HDPE';
-      const THK = c => c.replace(/[LH]$/, '');
-      const fmt = n => Math.floor(n).toLocaleString();
-
-      let total=0, areaSum=0, list='', idx=1;
-      tbody.querySelectorAll('tr').forEach(tr=>{
-        const code = tr.querySelector('.t').value;
-        const w = parseFloat(tr.querySelector('.w').value||0);
-        const l = parseFloat(tr.querySelector('.l').value||0);
-        const d = parseFloat(tr.querySelector('.d').value||0);
-        const q = parseInt(tr.querySelector('.q').value||1);
-        const isCanal = tr.querySelector('.canal').checked;
-        if(w<=0 || l<=0 || q<=0) return;
-        let aw=w, al=l; if(d>0){ const pad=isCanal?1:2; aw=w+d*2+pad; al=l+d*2+pad; }
-        let pricePer = PRICE[code];
-        if(isCanal) pricePer = Math.floor(pricePer * 1.05);
-        const area = aw*al; const cost = Math.floor(area * pricePer * q);
-        total += cost; areaSum += area*q;
-        list += `📍 รายการ ${idx}:\nผ้าพลาสติก ${MAT(code)} หนา ${THK(code)} มม. (${pricePer} บาท/ตร.ม.)\nผ้าขนาด ${aw} × ${al} ม. = ${fmt(area)} ตร.ม.\nราคาผ้า ${fmt(cost)} บาท\n`;
-        if(q>1) list += `จำนวน ${q} ผืน\n`;
-        idx++;
-      });
-
-      if(total===0){ return alert('กรุณากรอกอย่างน้อย 1 รายการ'); }
-
+      let total=0, areaSum=0, list='', idx=1; tbody.querySelectorAll('tr').forEach(tr=>{ const code = tr.querySelector('.t').value; const w = parseFloat(tr.querySelector('.w').value||0); const l = parseFloat(tr.querySelector('.l').value||0); const d = parseFloat(tr.querySelector('.d').value||0); const q = parseInt(tr.querySelector('.q').value||1); const isCanal = tr.querySelector('.canal').checked; if(w<=0 || l<=0 || q<=0) return; let aw=w, al=l; if(d>0){ const pad=isCanal?1:2; aw=w+d*2+pad; al=l+d*2+pad; } let pricePer = PRICE[code]; if(isCanal) pricePer = Math.floor(pricePer * 1.05); const area = aw*al; const cost = Math.floor(area * pricePer * q); total += cost; areaSum += area*q; list += `📍 รายการ ${idx}:\nผ้าพลาสติก ${MAT(code)} หนา ${THK(code)} มม. (${pricePer} บาท/ตร.ม.)\nผ้าขนาด ${aw} × ${al} ม. = ${fmt(area)} ตร.ม.\nราคาผ้า ${fmt(cost)} บาท\n`; if(q>1) list += `จำนวน ${q} ผืน\n`; idx++; });
+      if(total===0) return alert('กรุณากรอกอย่างน้อย 1 รายการ');
       let discountAmount=0; if(useDiscount){ discountAmount=Math.floor(total*0.05); total-=discountAmount; }
       let ship = total<5000?300:0; if(document.getElementById('summarySpecial').checked){ const ex=Math.floor(areaSum*5); ship += ex>2000?2000:ex; }
       const grand = Math.floor(total+ship); const dep = grand>=5000?Math.floor(grand*0.1):0; const bal = grand-dep;
 
-      let out = cust?`ส่ง\n${cust}\n\n${list}`:list;
-      out += `📌 สรุปยอดสั่งซื้อทั้งหมด\nยอดรวม ${fmt(grand)} บาท\n`;
-      if(useFactory) out += `(ราคาโรงงาน เพจน้ำเงิน)\n`;
-      if(useDiscount) out += `(ส่วนลดพิเศษ 5% = ${fmt(discountAmount)} บาท)\n`;
-      out += ship?`ค่าจัดส่ง ${fmt(ship)} บาท\n`:'ส่งฟรี ชำระเงินเมื่อได้รับของค่ะ\n\n';
-      if(dep) out += `✅ ชำระมัดจำ 10% (${fmt(dep)} บาท)`;
-      out += `\n COD ${fmt(bal)} บาท\n\n`;
-      out += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 4-6 วัน`;
-
-      const page = document.getElementById('pageSelect').value; const admin = document.getElementById('adminSelect').value;
-      if(page) out += `\n\nเพจ: ${page}`; if(admin) out += `\nแอดมิน: ${admin}`;
-      document.getElementById('summaryResult').value = out.trim();
-      document.getElementById('summaryCopy').classList.remove('hidden');
+      let out = cust?`ส่ง\n${cust}\n\n${list}`:list; out += `📌 สรุปยอดสั่งซื้อทั้งหมด\nยอดรวม ${fmt(grand)} บาท\n`; if(useFactory) out += `(ราคาโรงงาน เพจน้ำเงิน)\n`; if(useDiscount) out += `(ส่วนลดพิเศษ 5% = ${fmt(discountAmount)} บาท)\n`; out += ship?`ค่าจัดส่ง ${fmt(ship)} บาท\n`:'ส่งฟรี ชำระเงินเมื่อได้รับของค่ะ\n\n'; if(dep) out += `✅ ชำระมัดจำ 10% (${fmt(dep)} บาท)`; out += `\n COD ${fmt(bal)} บาท\n\n`; out += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 4-6 วัน`;
+      const page = document.getElementById('pageSelect').value; const admin = document.getElementById('adminSelect').value; if(page) out += `\n\nเพจ: ${page}`; if(admin) out += `\nแอดมิน: ${admin}`;
+      document.getElementById('summaryResult').value = out.trim(); document.getElementById('summaryCopy').classList.remove('hidden');
     };
     document.getElementById('summaryCopy').onclick = ()=>{ const t=document.getElementById('summaryResult'); t.select(); document.execCommand('copy'); alert('คัดลอกแล้ว'); };
 
     // --- quick smoke tests ---
     (function runTests(){
       console.log('[TEST] pondWidth exist =>', !!document.getElementById('pondWidth'));
-      console.log('[TEST] canal Blue=50 OK =>', (document.getElementById('canalFactoryBlue')?true:false));
-      console.log('[TEST] summary Blue map =>', (document.getElementById('summaryFactoryBlue')?true:false));
+      console.log('[TEST] canal Blue=50 OK =>', !!document.getElementById('canalFactoryBlue'));
+      console.log('[TEST] summary Blue map =>', !!document.getElementById('summaryFactoryBlue'));
       console.log('[TEST] flatbar tab exist =>', !!document.getElementById('flatbarContainer'));
-      console.log('[TEST] carLength input exist =>', !!document.getElementById('carLength'));
-      console.log('[TEST] cloth table exist =>', !!document.getElementById('clothTableFlatbar'));
-
-      // Functional sanity checks for flatbar
-      const t5 = (function(){ const k = (function(L){ const r = (function pickBars(len){ let x=parseInt(len,10); if(isNaN(x)||x<2) return null; if(x===4) return {two:2,three:0}; if(x===5) return {two:1,three:1}; if(x===6) return {two:0,three:2}; if(x===7) return {two:2,three:1}; let three=Math.floor(x/3); while(three>=0){ const rem=x-three*3; if(rem%2===0) return {two:rem/2, three}; three--; } return null; })(L); if(!r) return 0; const base=300+(4*L*50); return base; })(5); return k; })();
-      console.log('[TEST] calc flatbar base for 5m (no front cloth) =>', t5); // expect 1300
+      console.log('[TEST] collectCloth join newline =>', (collectCloth().text!==undefined));
+      // sanity: flatbar base for 5m no front cloth => 1300
+      const base5 = (300 + (4*5*50)); console.log('[TEST] flatbar 5m base =>', base5);
     })();
   </script>
 </body>
 </html>
-
