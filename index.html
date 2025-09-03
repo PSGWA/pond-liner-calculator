@@ -177,16 +177,20 @@
       <hr style="opacity:.25; margin:16px 0">
 
       <label>คำนวณเหล็กแบน (ไม่บังคับ)</label>
-      <div class="hint">สูตรราคาเหล็กแบน: 300 + (ความยาวรถ × 50 × 4) บาท  และ +150 บาท ถ้า "มีผ้าขึ้นด้านหน้า" • จำนวนคูณ 4 จุด • เหล็กยาว 2 ม./3 ม. จะถูกเลือกอัตโนมัติ</div>
+     <div class="hint">
+  สูตรราคาเหล็กแบน: (ความยาวรถ × 50 × 4) + เหล๊กติดหัวท้าย 300 บาท และ +150 บาท/คัน ถ้า "มีผ้าขึ้นด้านหน้า"
+  • จำนวนคูณ 4 จุด • เหล็กยาว 2 ม./3 ม. จะถูกเลือกอัตโนมัติ
+</div>
       <h4 style="margin:8px 0">รายการเหล็กแบน</h4>
       <table class="items-table" id="flatbarItemsTable">
-        <thead>
-          <tr>
-            <th>ความยาวรถ (ม.)</th>
-            <th>จำนวนคัน</th>
-            <th>ลบ</th>
-          </tr>
-        </thead>
+     <thead>
+  <tr>
+    <th>ความยาวรถ :(ม.)</th>
+    <th>ความกว้างรถ (ม.)</th>
+    <th>จำนวนคัน</th>
+    <th>ลบ</th>
+  </tr>
+</thead>
         <tbody></tbody>
       </table>
       <button type="button" id="addFlatbarRow" class="btn-secondary" style="margin-bottom:8px">+ เพิ่มรายการเหล็กแบน</button>
@@ -493,28 +497,32 @@
     makeClothRow('custom');
 
     // --- FLATBAR items (multiple rows) ---
-    function makeFlatbarRow(len=4, qty=1){
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><input type="number" class="flen" step="1" min="2" placeholder="เช่น 4" value="${len}"></td>
-        <td><input type="number" class="fqty" step="1" min="1" value="${qty}"></td>
-        <td><button type="button" class="btn-danger fdel">ลบ</button></td>`;
-      tr.querySelector('.fdel').onclick = ()=> tr.remove();
-      flatbarItemsBody.appendChild(tr);
-    }
+   function makeFlatbarRow(len=4, width=2.4, qty=1){
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="number" class="flen"   step="0.1" min="2"   placeholder="เช่น 4"   value="${len}"></td>
+    <td><input type="number" class="fwidth" step="0.1" min="0.5" placeholder="เช่น 2.5" value="${width}"></td>
+    <td><input type="number" class="fqty"   step="1"   min="1"   value="${qty}"></td>
+    <td><button type="button" class="btn-danger fdel">ลบ</button></td>`;
+  tr.querySelector('.fdel').onclick = ()=> tr.remove();
+  flatbarItemsBody.appendChild(tr);
+}
     addFlatbarRowBtn.addEventListener('click', ()=> makeFlatbarRow());
     makeFlatbarRow();
 
-    function collectFlatbarItems(){
-      const rows = [...flatbarItemsBody.querySelectorAll('tr')];
-      const items = [];
-      for(const tr of rows){
-        const L = parseInt(tr.querySelector('.flen').value,10);
-        const q = Math.max(1, parseInt(tr.querySelector('.fqty').value||1,10));
-        if(!isNaN(L) && L>=2) items.push({L, qty:q});
-      }
-      return items;
+   function collectFlatbarItems(){
+  const rows = [...flatbarItemsBody.querySelectorAll('tr')];
+  const items = [];
+  for(const tr of rows){
+    const L = parseFloat(tr.querySelector('.flen')?.value);
+    const W = parseFloat(tr.querySelector('.fwidth')?.value);
+    const q = Math.max(1, parseInt(tr.querySelector('.fqty')?.value||1,10));
+    if(Number.isFinite(L) && L>=2 && Number.isFinite(W) && W>0){
+      items.push({L, W, qty:q});
     }
+  }
+  return items;
+}
 
     function collectCloth(){
       const rows = [...clothTableBody.querySelectorAll('tr')];
@@ -535,54 +543,122 @@
       return {has, text: lines.join('\n'), price, simple};
     }
 
-    function pickBars(len){
-      let L = parseInt(len,10); if(isNaN(L) || L<2) return null;
-      if(L===4) return {two:2, three:0}; if(L===5) return {two:1, three:1}; if(L===6) return {two:0, three:2}; if(L===7) return {two:2, three:1};
-      let three = Math.floor(L/3); while(three>=0){ const remain = L - three*3; if(remain%2===0) return {two:remain/2, three}; three--; } return null;
+   function pickBars(len){
+  const L = Number(len);
+  if(!Number.isFinite(L) || L < 2) return null;
+
+  // ใช้เหล็ก 4 ขนาด และ "ปัดลง" (ไม่เกินความยาวจริง), พยายามให้ผลรวมยาวที่สุด
+  const sizes = [3.5, 3, 2.5, 2]; // เรียงเพื่อง่ายต่อการวนหา
+  // เก็บผลลัพธ์ที่ดีที่สุด: sum = ความยาวรวมที่ใช้, counts = [2m, 2.5m, 3m, 3.5m]
+  let best = { sum: 0, counts: [0, 0, 0, 0] };
+
+  const maxD = Math.floor(L / sizes[0]); // 3.5
+  for (let d = 0; d <= maxD; d++) {
+    const lenD = d * sizes[0];
+
+    const maxC = Math.floor((L - lenD) / sizes[1]); // 3.0
+    for (let c = 0; c <= maxC; c++) {
+      const lenC = lenD + c * sizes[1];
+      if (lenC > L) break;
+
+      const maxB = Math.floor((L - lenC) / sizes[2]); // 2.5
+      for (let b = 0; b <= maxB; b++) {
+        const lenB = lenC + b * sizes[2];
+        if (lenB > L) break;
+
+        // เติมที่เหลือด้วย 2 ม. (ปัดลง)
+        const a = Math.floor((L - lenB) / sizes[3]); // 2.0
+        const sum = lenB + a * sizes[3];
+
+        // tie-break: 1) sum มากกว่า ชนะ  2) ชิ้นน้อยกว่า ชนะ  3) ชอบใช้ 3 ม. แล้วค่อย 2.5 ม.
+        const bars = a + b + c + d;
+        const bestBars = best.counts[0] + best.counts[1] + best.counts[2] + best.counts[3];
+        const preferScore = (c * 100 + b * 10) - (best.counts[2] * 100 + best.counts[1] * 10);
+
+        if (
+          sum > best.sum ||
+          (sum === best.sum && bars < bestBars) ||
+          (sum === best.sum && bars === bestBars && preferScore > 0)
+        ) {
+          // เก็บเป็น [2m, 2.5m, 3m, 3.5m]
+          best = { sum, counts: [a, b, c, d] };
+        }
+      }
     }
+  }
 
-    function calcFlatbarAggregate(items, hasFront=false){
-      // รวมรายการเหล็กแบน: คูณทั้ง "ราคา" และ "จำนวนเส้น" ด้วยจำนวนคัน
-      let totalTwo=0, totalThree=0, totalLen=0, totalPrice=0, totalCars=0; const lines=[];
-      const points = 4; // ต่อจุดคูณ 4 จุด
-      for(const {L, qty} of items){
-        const seg = pickBars(L); if(!seg) continue;
-        const perTwo = seg.two * points;
-        const perThree = seg.three * points;
-        const perLen = L * points;
-        const unitPrice = 300 + (perLen*50) + (hasFront?150:0); // ราคาต่อคัน (ชุดหนึ่งต่อรถ 1 คัน)
+  const [a2, b25, c3, d35] = best.counts; // mapping ชัดเจน
+  return { b2: a2, b25, b3: c3, b35: d35, used: best.sum };
+}
 
-        totalTwo   += perTwo   * qty;  // คูณจำนวนคัน
-        totalThree += perThree * qty;
-        totalLen   += perLen   * qty;
-        totalPrice += unitPrice * qty; // คูณจำนวนคัน
-        totalCars  += qty;
+   function calcFlatbarAggregate(items, hasFront=false){
+  // รวมรายการเหล็กแบน: คูณทั้ง "ราคา" และ "จำนวนเส้น" ด้วยจำนวนคัน
+  let totalB2=0, totalB25=0, totalB3=0, totalB35=0;
+  let totalLen=0, totalPrice=0, totalCars=0;
+  const lines=[];
+  const points = 4; // ต่อจุดคูณ 4 จุด
 
-        lines.push(`ความยาวรถ ${L} เมตร${qty>1?` จำนวน ${qty} คัน`:''}`);
-      }
-      if(lines.length===0){
-        return { text:'', totalTwo:0, totalThree:0, totalLen:0, totalPrice:0, itemsLine:'' };
-      }
-      const parts=[];
-      if(totalTwo>0)  parts.push(`เหล็กแบน 2 ม. × ${totalTwo} เส้น`);
-      if(totalThree>0)parts.push(`เหล็กแบน 3 ม. × ${totalThree} เส้น`);
-      const itemsLine = parts.join(', ');
+  for (const {L, W, qty} of items){
+  const seg = pickBars(L); if(!seg) continue;
 
-      // เหล็กหัว-ท้าย 2.5 ม.: ถ้ามีผ้าขึ้นด้านหน้า = 3 เส้น/คัน, ไม่มีก็ 2 เส้น/คัน
-      const remarkPerCar = hasFront?3:2;
-      const remarkTotal  = remarkPerCar * (totalCars||1);
+  const per2   = seg.b2  * points;
+  const per25  = seg.b25 * points;
+  const per3   = seg.b3  * points;
+  const per35  = seg.b35 * points;
 
-      const header = `📦 ชุดเหล็กแบนสำหรับติดตั้ง MP Flow 2.0 `;
-      const body = `
-${lines.join('\n')}
+  // เดิม:
+  // const perLen = L * points;
+  // const priceLen = perLen * 50;
 
-ยอดสรุปรวม (เหล็กแบน) ${totalPrice.toLocaleString()} บาท
+  // ใหม่: คิดราคาตามเหล็กที่ “ให้จริง” (seg.used)
+  const perLenUsed = seg.used * points;   // เมตร/คัน จากชุดเหล็กที่ตัดจริง
+  const priceLen   = perLenUsed * 50;
 
-สิ่งที่จะได้รับ : ${itemsLine} 
+  const priceHeadTail = (W * 2) * 50;     // เท่าเดิม: กว้าง×2 ด้าน × 50
+  const unitPrice     = priceLen + priceHeadTail + (hasFront ? 150 : 0);
 
-หมายเหตุ: รวมเหล็กสำหรับติดตั้งหัวท้าย 2.5 ม. × ${remarkTotal} เส้น และฟรีสกรูสำหรับติดตั้งแล้ว`;
-      return { text: header + body, totalTwo, totalThree, totalLen, totalPrice, itemsLine };
-    };
+  totalB2  += per2  * qty;
+  totalB25 += per25 * qty;
+  totalB3  += per3  * qty;
+  totalB35 += per35 * qty;
+
+  // เดิม: totalLen += perLen * qty;
+  totalLen += perLenUsed * qty;
+
+  totalPrice += unitPrice * qty;
+  totalCars  += qty;
+
+  lines.push(`ความยาวรถ ${L} เมตร ความกว้าง ${W} เมตร${qty>1?` จำนวน ${qty} คัน`:''}`);
+}
+
+
+  if(lines.length===0){
+    return { text:'', totalTwo:0, totalThree:0, totalLen:0, totalPrice:0, itemsLine:'' };
+  }
+
+  const parts=[];
+  if(totalB2  > 0) parts.push(`เหล็กแบน 2 ม. × ${totalB2} เส้น`);
+  if(totalB25 > 0) parts.push(`เหล็กแบน 2.5 ม. × ${totalB25} เส้น`);
+  if(totalB3  > 0) parts.push(`เหล็กแบน 3 ม. × ${totalB3} เส้น`);
+  if(totalB35 > 0) parts.push(`เหล็กแบน 3.5 ม. × ${totalB35} เส้น`);
+  const itemsLine = parts.join(', ');
+
+  // show ความกว้างในหมายเหตุ (รวมค่าไม่ซ้ำ)
+  const uniqueW = [...new Set(items.map(x => x.W).filter(w => Number.isFinite(w)))];
+  const widthNote = uniqueW.length === 1
+    ? ` ${uniqueW[0]} ม.`
+    : (uniqueW.length > 1 ? ` ${uniqueW.map(w => w + ' ม.').join(', ')}` : '');
+
+  // เหล็กหัว-ท้าย (ชิ้น) ต่อคัน: ไม่มีผ้าขึ้นหน้า = 2 ชิ้น/คัน, ถ้ามี = 3 ชิ้น/คัน
+  const remarkPerCar = hasFront ? 3 : 2;
+  const remarkTotal  = remarkPerCar * (totalCars || 1);
+
+  const header = `📦 ชุดเหล็กแบนสำหรับติดตั้ง MP Flow 2.0 `;
+  const body = `\n${lines.join('\n')}\nสิ่งที่จะได้รับ : ${itemsLine} , เหล็กสำหรับติดตั้งหัวท้าย 2.4 ม. × ${remarkTotal} เส้น เหล็กสำหรับติดตั้งแนวตั้งมุม 0.6 ม. x 4 เส้น และสกรูสำหรับติดตั้งแล้ว
+ยอดเหล็กแบน ${totalPrice.toLocaleString()} บาท`;
+  return { text: header + body, totalTwo: totalB2, totalThree: totalB3, totalLen, totalPrice, itemsLine };
+};
+
 
     flatbarForm.onsubmit = function(e){
       e.preventDefault();
@@ -600,7 +676,6 @@ ${lines.join('\n')}
       // สร้างข้อความสรุปตามฟอร์แมตที่ขอ
       let out = 'ส่ง';
       if(cust) out += `
-
 ${cust}`;
       out += `
 
@@ -645,10 +720,9 @@ ${kit.text}`; }
       out += `
 
 โอนชำระเมื่อได้รับสินค้า
-บัญชีธนาคารกสิกรไทย
-ชื่อบัญชี บริษัทมนูธรรมพลาสติก
-เลขที่บัญชี 
-1888-5999-39 `;
+ธนาคารกสิกรไทย
+ชื่อบัญชี:ริษัทมนูธรรมพลาสติก
+เลขที่:1888-5999-39 `;
       if(dep>0) out += `
 มัดจำ 10% (${dep.toLocaleString()} บาท)`;
       out += `
