@@ -55,16 +55,16 @@
     .row{display:grid; grid-template-columns: 1fr 1fr; gap:12px;}
 
     @media (max-width:600px){
-      .container{ padding:14px; }
-      .tab{ padding:8px 14px; font-size:14px; }
-      button{ font-size:16px; }
-      .items-table{ display:block; overflow-x:auto; }
-      .row{ grid-template-columns:1fr; }
-      /* ขยาย input และ select บนมือถือให้มองเห็นชัด ไม่โดนซูม */
-      input[type="number"], input[type="text"], select, textarea{ font-size:18px; min-height:52px; }
-      .items-table input[type="number"], .items-table select{ height:56px; font-size:20px; }
-      .items-table th, .items-table td{ padding:12px; }
-      .items-table td:nth-child(2), .items-table td:nth-child(3), .items-table td:nth-child(4), .items-table t .tab{ padding:8px 14px; font-size:14px; } button{ font-size:14px; } .items-table{ display:block; overflow-x:auto; } .row{ grid-template-columns:1fr; } }
+  .container{ padding:14px; }
+  .tab{ padding:8px 14px; font-size:14px; }
+  button{ font-size:16px; }
+  .items-table{ display:block; overflow-x:auto; }
+  .row{ grid-template-columns:1fr; }
+  input[type="number"], input[type="text"], select, textarea{ font-size:18px; min-height:52px; }
+  .items-table input[type="number"], .items-table select{ height:56px; font-size:20px; }
+  .items-table th, .items-table td{ padding:12px; }
+}
+
   </style>
 </head>
 <body>
@@ -100,6 +100,7 @@
       <label><input type="checkbox" id="pondSpecialProvince" value="yes"> ส่งจังหวัดพัทลุง สตูล ปัตตานี ยะลา นราธิวาส (เพิ่ม 5 บาท/ตร.ม. สูงสุด 2,000)</label>
       <label><input type="checkbox" id="pondDiscount5" value="yes"> ใช้ส่วนลดพิเศษ 5%</label>
       <label><input type="checkbox" id="pondFactoryBlue" value="yes"> เพจ "น้ำเงิน ราคาโรงงาน" (ใช้ราคา 40/60/80 บาท/ตร.ม.)</label>
+      <label><input type="checkbox" id="pondRoundCloth" value="yes"> ผ้ากลม (+10 บาท/ตร.ม.)</label>
       <div class="hint">เมื่อเลือกราคาโรงงาน: 0.3 = 40, 0.5 = 60, 0.75 = 80 บาท/ตร.ม.</div>
 
       <button type="submit" class="btn-primary">คำนวณ</button>
@@ -272,7 +273,7 @@
       <label style="margin-top:14px"><input type="checkbox" id="summarySpecial"> จังหวัดพิเศษ (+5 บาท/ตร.ม. สูงสุด 1,500 บาท)</label>
       <label><input type="checkbox" id="summaryDiscount5"> ใช้ส่วนลดพิเศษ 5%</label>
       <label><input type="checkbox" id="summaryFactoryBlue"> เพจ "น้ำเงิน ราคาโรงงาน" (0.3L=40, 0.5L=50, 0.5H=60, 0.75H=80 บาท/ตร.ม.)</label>
-
+      <label><input type="checkbox" id="summaryRoundCloth"> ผ้ากลม (+10 บาท/ตร.ม.)</label>
       <label>เลือกเพจ</label>
       <select id="pageSelect">
         <option value="">เลือกเพจ...</option>
@@ -341,6 +342,7 @@
     const pondSpecialProvince = document.getElementById('pondSpecialProvince');
     const pondDiscount5 = document.getElementById('pondDiscount5');
     const pondFactoryBlue = document.getElementById('pondFactoryBlue');
+    const pondRoundCloth = document.getElementById('pondRoundCloth');
 
     pondForm.onsubmit = function(e){
       e.preventDefault();
@@ -350,6 +352,10 @@
       const ow=w, ol=l;
       if(d>0){ w = w + d*2 + 2; l = l + d*2 + 2; }
       const priceList = getPondPriceList(pondFactoryBlue.checked);
+      // +10 บาท/ตร.ม. ถ้าเป็นผ้ากลม
+     if (pondRoundCloth && pondRoundCloth.checked) {
+Object.keys(priceList).forEach(k => { priceList[k].price += 10; });
+}
       const area = w*l; let text='';
       if(size.value==='all'){
         const p03=Math.floor(area*priceList['0.3'].price), p05=Math.floor(area*priceList['0.5'].price), p075=Math.floor(area*priceList['0.75'].price);
@@ -359,6 +365,9 @@
         text += `✅ HDPE หนา 0.75 มม. – ${p075.toLocaleString()} บาท (${priceList['0.75'].price} บาท/ตร.ม.)\n\n`;
         text += `ยิ่งหนา ยิ่งทนทาน ต่อสภาพแวดล้อมรุนแรงและพื้นผิวขรุขระ`;
         if(pondFactoryBlue.checked){ text += `\n(ราคานี้เป็นราคาโรงงาน เพจน้ำเงิน)`; }
+        if (pondRoundCloth.checked) {
+    text += `\n(ผ้ากลม +10 บาท/ตร.ม.)`;
+  }
         text += `\n\nสนใจความหนาไหนแจ้งได้เลยค่ะ 😊`;
       }else{
         const sel = priceList[size.value];
@@ -372,6 +381,9 @@
         text += `ผ้าขนาด ${w} ม. × ${l} ม. = ${area.toLocaleString()} ตร.ม.\n(ขนาดผ้านี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 1 เมตรแล้ว)\n\n`;
         if(shipping>0){ text += `ราคาผ้า ${total.toLocaleString()} บาท\nค่าจัดส่ง ${shipping.toLocaleString()} บาท\n`; }
         text += `📌 สรุปยอดสั่งซื้อทั้งหมด: ${sum.toLocaleString()} บาท\n`;
+        if(pondRoundCloth.checked) {
+    text += `(ผ้ากลม +10 บาท/ตร.ม.)\n`;
+  }
         if(pondFactoryBlue.checked) text += `(ราคาโรงงาน เพจน้ำเงิน)\n`;
         if(pondDiscount5.checked) text += `(ส่วนลดพิเศษ 5%)\n`;
         text += `รบกวนลูกค้าตรวจสอบรายการให้ครบก่อนยืนยันนะคะ ✨\nหากเริ่มผลิตแล้ว จะไม่สามารถแก้ไขหรือยกเลิกได้ค่ะ\n\n`;
@@ -721,7 +733,7 @@ ${kit.text}`; }
 
 โอนชำระเมื่อได้รับสินค้า
 ธนาคารกสิกรไทย
-ชื่อบัญชี:บริษัทมนูธรรมพลาสติก
+ชชื่อบัญชี: บริษัทมนูธรรมพลาสติก
 เลขที่:1888-5999-39 `;
       if(dep>0) out += `
 มัดจำ 10% (${dep.toLocaleString()} บาท)`;
@@ -754,6 +766,7 @@ ${dateText}`;
 
     // ---------- SUMMARY LOGIC (ไม่มีเหล็กแบน) ----------
     const tbody = document.querySelector('#itemsTable tbody');
+    const summaryRoundCloth = document.getElementById('summaryRoundCloth');
     const addRow = () => { const tr = document.createElement('tr'); tr.innerHTML = `
         <td><select class="t">
           <option value="0.3L">LDPE 0.3</option>
@@ -776,7 +789,43 @@ ${dateText}`;
       const PRICE = useFactory ? { '0.3L':40, '0.5L':50, '0.5H':60, '0.75H':80 } : { '0.3L':40, '0.5L':60, '0.5H':65, '0.75H':85 };
       const MAT = c => c.endsWith('L')?'LDPE':'HDPE'; const THK = c => c.replace(/[LH]$/, ''); const fmt = n => Math.floor(n).toLocaleString();
 
-      let total=0, areaSum=0, list='', idx=1; tbody.querySelectorAll('tr').forEach(tr=>{ const code = tr.querySelector('.t').value; const w = parseFloat(tr.querySelector('.w').value||0); const l = parseFloat(tr.querySelector('.l').value||0); const d = parseFloat(tr.querySelector('.d').value||0); const q = parseInt(tr.querySelector('.q').value||1); const isCanal = tr.querySelector('.canal').checked; if(w<=0 || l<=0 || q<=0) return; let aw=w, al=l; if(d>0){ const pad=isCanal?1:2; aw=w+d*2+pad; al=l+d*2+pad; } let pricePer = PRICE[code]; if(isCanal) pricePer = Math.floor(pricePer * 1.05); const area = aw*al; const cost = Math.floor(area * pricePer * q); total += cost; areaSum += area*q; list += `📍 รายการ ${idx}:\nผ้าพลาสติก ${MAT(code)} หนา ${THK(code)} มม. (${pricePer} บาท/ตร.ม.)\nผ้าขนาด ${aw} × ${al} ม. = ${fmt(area)} ตร.ม.\nราคาผ้า ${fmt(cost)} บาท\n`; if(q>1) list += `จำนวน ${q} ผืน\n`; idx++; });
+      let total=0, areaSum=0, list='', idx=1; tbody.querySelectorAll('tr').forEach(tr=>{
+const code = tr.querySelector('.t').value;
+const w = parseFloat(tr.querySelector('.w').value||0);
+const l = parseFloat(tr.querySelector('.l').value||0);
+const d = parseFloat(tr.querySelector('.d').value||0);
+const q = parseInt(tr.querySelector('.q').value||1);
+const isCanal = tr.querySelector('.canal').checked;
+if(w<=0 || l<=0 || q<=0) return;
+
+
+let aw=w, al=l;
+if(d>0){
+const pad=isCanal?1:2;
+aw=w+d*2+pad; al=l+d*2+pad;
+}
+
+
+let pricePer = PRICE[code];
+if (isCanal) pricePer = Math.floor(pricePer * 1.05);
+if (summaryRoundCloth && summaryRoundCloth.checked) {
+pricePer += 10; // ผ้ากลม +10 บาท/ตร.ม.
+}
+
+
+const area = aw*al;
+const cost = Math.floor(area * pricePer * q);
+total += cost;
+areaSum += area*q;
+
+
+list += `📍 รายการ ${idx}:\n`+
+`ผ้าพลาสติก ${MAT(code)} หนา ${THK(code)} มม. (${pricePer} บาท/ตร.ม.)\n`+
+`ผ้าขนาด ${aw} × ${al} ม. = ${fmt(area)} ตร.ม.\n`+
+`ราคาผ้า ${fmt(cost)} บาท\n`;
+if(q>1) list += `จำนวน ${q} ผืน\n`;
+idx++;
+});
       if(total===0) return alert('กรุณากรอกอย่างน้อย 1 รายการ');
       let discountAmount=0; if(useDiscount){ discountAmount=Math.floor(total*0.05); total-=discountAmount; }
       let ship = total<5000?300:0; if(document.getElementById('summarySpecial').checked){ const ex=Math.floor(areaSum*5); ship += ex>2000?2000:ex; }
@@ -784,6 +833,9 @@ ${dateText}`;
 
       let out = cust?`ส่ง\n${cust}\n\n${list}`:list; out += `📌 สรุปยอดสั่งซื้อทั้งหมด\nยอดรวม ${fmt(grand)} บาท\n`; if(useFactory) out += `(ราคาโรงงาน เพจน้ำเงิน)\n`; if(useDiscount) out += `(ส่วนลดพิเศษ 5% = ${fmt(discountAmount)} บาท)\n`; out += ship?`ค่าจัดส่ง ${fmt(ship)} บาท\n`:'ส่งฟรี ชำระเงินเมื่อได้รับของค่ะ\n\n'; if(dep) out += `✅ ชำระมัดจำ 10% (${fmt(dep)} บาท)`; out += `\n COD ${fmt(bal)} บาท\n\n`; out += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 4-6 วัน`;
       const page = document.getElementById('pageSelect').value; const admin = document.getElementById('adminSelect').value; if(page) out += `\n\nเพจ: ${page}`; if(admin) out += `\nแอดมิน: ${admin}`;
+      if (summaryRoundCloth && summaryRoundCloth.checked) {
+out += `\n(ผ้ากลม +10 บาท/ตร.ม.)`;
+}
       document.getElementById('summaryResult').value = out.trim(); document.getElementById('summaryCopy').classList.remove('hidden');
     };
     document.getElementById('summaryCopy').onclick = ()=>{ const t=document.getElementById('summaryResult'); t.select(); document.execCommand('copy'); alert('คัดลอกแล้ว'); };
@@ -801,4 +853,3 @@ ${dateText}`;
   </script>
 </body>
 </html>
-
