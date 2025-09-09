@@ -664,9 +664,10 @@ Object.keys(priceList).forEach(k => { priceList[k].price += 10; });
   // เหล็กหัว-ท้าย (ชิ้น) ต่อคัน: ไม่มีผ้าขึ้นหน้า = 2 ชิ้น/คัน, ถ้ามี = 3 ชิ้น/คัน
   const remarkPerCar = hasFront ? 3 : 2;
   const remarkTotal  = remarkPerCar * (totalCars || 1);
+  const cornerBarsTotal = 4 * (totalCars || 1);
 
   const header = `📦 ชุดเหล็กแบนสำหรับติดตั้ง MP Flow 2.0 `;
-  const body = `\n${lines.join('\n')}\nสิ่งที่จะได้รับ : ${itemsLine} , เหล็กสำหรับติดตั้งหัวท้าย 2.4 ม. × ${remarkTotal} เส้น เหล็กสำหรับติดตั้งแนวตั้งมุม 0.6 ม. x 4 เส้น และสกรูสำหรับติดตั้งแล้ว
+  const body = `\n${lines.join('\n')}\nสิ่งที่จะได้รับ : ${itemsLine} , เหล็กสำหรับติดตั้งหัวท้าย 2.4 ม. × ${remarkTotal} เส้น เหล็กสำหรับติดตั้งแนวตั้งมุม 0.6 ม. x ${cornerBarsTotal} เส้น และสกรูสำหรับติดตั้งแล้ว
 ยอดเหล็กแบน ${totalPrice.toLocaleString()} บาท`;
   return { text: header + body, totalTwo: totalB2, totalThree: totalB3, totalLen, totalPrice, itemsLine };
 };
