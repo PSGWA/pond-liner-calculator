@@ -179,23 +179,23 @@
 
       <label>คำนวณเหล็กแบน (ไม่บังคับ)</label>
      <div class="hint">
-  สูตรราคาเหล็กแบน: (ความยาวรถ × 50 × 4) + เหล๊กติดหัวท้าย 300 บาท และ +150 บาท/คัน ถ้า "มีผ้าขึ้นด้านหน้า"
-  • จำนวนคูณ 4 จุด • เหล็กยาว 2 ม./3 ม. จะถูกเลือกอัตโนมัติ
+  เลือกชุดเหล็กแบนตามความยาว / ความกว้างรถ ระบบจะคำนวณจำนวนเหล็กและราคา (บาท/คัน) ให้ให้อัตโนมัติ แล้วคูณตามจำนวนคันที่ระบุ
 </div>
+
       <h4 style="margin:8px 0">รายการเหล็กแบน</h4>
       <table class="items-table" id="flatbarItemsTable">
      <thead>
   <tr>
-    <th>ความยาวรถ :(ม.)</th>
-    <th>ความกว้างรถ (ม.)</th>
+    <th>ชุดเหล็กแบน (ตามความยาวรถ)</th>
     <th>จำนวนคัน</th>
     <th>ลบ</th>
   </tr>
 </thead>
+
         <tbody></tbody>
       </table>
       <button type="button" id="addFlatbarRow" class="btn-secondary" style="margin-bottom:8px">+ เพิ่มรายการเหล็กแบน</button>
-      <label><input type="checkbox" id="hasFrontCloth"> มีผ้าขึ้นด้านหน้า (+150 บาท/ชุด)</label>
+      
 
       <div class="row">
         <div>
@@ -470,7 +470,7 @@ Object.keys(priceList).forEach(k => { priceList[k].price += 10; });
     const flatbarReset = document.getElementById('flatbarReset');
     const flatbarItemsBody = document.querySelector('#flatbarItemsTable tbody');
     const addFlatbarRowBtn = document.getElementById('addFlatbarRow');
-    const hasFrontEl = document.getElementById('hasFrontCloth');
+    
 
     const clothTableBody = document.querySelector('#clothTableFlatbar tbody');
     const btnAddCloth = document.getElementById('flatbarAddCloth');
@@ -509,16 +509,73 @@ Object.keys(priceList).forEach(k => { priceList[k].price += 10; });
     makeClothRow('custom');
 
     // --- FLATBAR items (multiple rows) ---
-   function makeFlatbarRow(len=4, width=2.4, qty=1){
+    // ชุดเหล็กแบนสำเร็จรูป ตามความยาว / ความกว้างรถ
+const FLATBAR_PRESETS = {
+  '7-25': {
+    id: '7-25',
+    label: 'รถยาว 7 ม. กว้าง 2.5 ม. — 1,850 บาท/คัน',
+    length: 7,
+    width: 2.5,
+    pricePerCar: 1850,
+    longBars:  [{ len: 3.5, qty: 8 }],     // เหล็กแบน 3.5 ม. × 8
+    crossBars: [{ len: 2.4, qty: 3 }],     // แนวขวาง 2.4 ม. × 3
+    cornerBars:[{ len: 0.6, qty: 4 }],     // แนวตั้งมุม 0.6 ม. × 4
+  },
+  '6-25': {
+    id: '6-25',
+    label: 'รถยาว 6 ม. กว้าง 2.5 ม. — 1,650 บาท/คัน',
+    length: 6,
+    width: 2.5,
+    pricePerCar: 1650,
+    longBars:  [{ len: 3.0, qty: 8 }],
+    crossBars: [{ len: 2.4, qty: 3 }],
+    cornerBars:[{ len: 0.6, qty: 4 }],
+  },
+  '5-25': {
+    id: '5-25',
+    label: 'รถยาว 5 ม. กว้าง 2.5 ม. — 1,450 บาท/คัน',
+    length: 5,
+    width: 2.5,
+    pricePerCar: 1450,
+    longBars:  [
+      { len: 3.0, qty: 4 },
+      { len: 2.0, qty: 4 },
+    ],
+    crossBars: [{ len: 2.4, qty: 3 }],
+    cornerBars:[{ len: 0.6, qty: 4 }],
+  },
+  '4-20': {
+    id: '4-20',
+    label: 'รถยาว 4 ม. กว้าง 2 ม. — 1,200 บาท/คัน',
+    length: 4,
+    width: 2.0,
+    pricePerCar: 1200,
+    longBars:  [{ len: 2.0, qty: 8 }],    // เหล็กแบนแนวยาว
+    crossBars: [{ len: 2.0, qty: 3 }],    // เหล็กแบนแนวขวาง
+    cornerBars:[{ len: 0.6, qty: 4 }],
+  },
+  // สามารถเพิ่มอีกให้ครบ 7 ตัวเลือกได้ เช่น '3-20', '9-25' ฯลฯ
+};
+
+   function makeFlatbarRow(defaultId = '7-25', qty = 1){
   const tr = document.createElement('tr');
   tr.innerHTML = `
-    <td><input type="number" class="flen"   step="0.1" min="2"   placeholder="เช่น 4"   value="${len}"></td>
-    <td><input type="number" class="fwidth" step="0.1" min="0.5" placeholder="เช่น 2.5" value="${width}"></td>
-    <td><input type="number" class="fqty"   step="1"   min="1"   value="${qty}"></td>
+    <td>
+      <select class="fpreset">
+        <option value="7-25">รถยาว 7 ม. กว้าง 2.5 ม. — 1,850 บาท/คัน</option>
+        <option value="6-25">รถยาว 6 ม. กว้าง 2.5 ม. — 1,650 บาท/คัน</option>
+        <option value="5-25">รถยาว 5 ม. กว้าง 2.5 ม. — 1,450 บาท/คัน</option>
+        <option value="4-20">รถยาว 4 ม. กว้าง 2 ม. — 1,200 บาท/คัน</option>
+      </select>
+    </td>
+    <td><input type="number" class="fqty" step="1" min="1" value="${qty}"></td>
     <td><button type="button" class="btn-danger fdel">ลบ</button></td>`;
+  const sel = tr.querySelector('.fpreset');
+  sel.value = defaultId;
   tr.querySelector('.fdel').onclick = ()=> tr.remove();
   flatbarItemsBody.appendChild(tr);
 }
+
     addFlatbarRowBtn.addEventListener('click', ()=> makeFlatbarRow());
     makeFlatbarRow();
 
@@ -526,15 +583,16 @@ Object.keys(priceList).forEach(k => { priceList[k].price += 10; });
   const rows = [...flatbarItemsBody.querySelectorAll('tr')];
   const items = [];
   for(const tr of rows){
-    const L = parseFloat(tr.querySelector('.flen')?.value);
-    const W = parseFloat(tr.querySelector('.fwidth')?.value);
-    const q = Math.max(1, parseInt(tr.querySelector('.fqty')?.value||1,10));
-    if(Number.isFinite(L) && L>=2 && Number.isFinite(W) && W>0){
-      items.push({L, W, qty:q});
+    const id  = tr.querySelector('.fpreset')?.value;
+    const qty = Math.max(1, parseInt(tr.querySelector('.fqty')?.value || 1, 10));
+    const preset = FLATBAR_PRESETS[id];
+    if(preset && qty > 0){
+      items.push({ preset, qty });
     }
   }
   return items;
 }
+
 
     function collectCloth(){
       const rows = [...clothTableBody.querySelectorAll('tr')];
@@ -603,74 +661,58 @@ Object.keys(priceList).forEach(k => { priceList[k].price += 10; });
   return { b2: a2, b25, b3: c3, b35: d35, used: best.sum };
 }
 
-   function calcFlatbarAggregate(items, hasFront=false){
-  // รวมรายการเหล็กแบน: คูณทั้ง "ราคา" และ "จำนวนเส้น" ด้วยจำนวนคัน
-  let totalB2=0, totalB25=0, totalB3=0, totalB35=0;
-  let totalLen=0, totalPrice=0, totalCars=0;
-  const lines=[];
-  const points = 4; // ต่อจุดคูณ 4 จุด
-
-  for (const {L, W, qty} of items){
-  const seg = pickBars(L); if(!seg) continue;
-
-  const per2   = seg.b2  * points;
-  const per25  = seg.b25 * points;
-  const per3   = seg.b3  * points;
-  const per35  = seg.b35 * points;
-
-  // เดิม:
-  // const perLen = L * points;
-  // const priceLen = perLen * 50;
-
-  // ใหม่: คิดราคาตามเหล็กที่ “ให้จริง” (seg.used)
-  const perLenUsed = seg.used * points;   // เมตร/คัน จากชุดเหล็กที่ตัดจริง
-  const priceLen   = perLenUsed * 50;
-
-  const priceHeadTail = (W * 2) * 50;     // เท่าเดิม: กว้าง×2 ด้าน × 50
-  const unitPrice     = priceLen + priceHeadTail + (hasFront ? 150 : 0);
-
-  totalB2  += per2  * qty;
-  totalB25 += per25 * qty;
-  totalB3  += per3  * qty;
-  totalB35 += per35 * qty;
-
-  // เดิม: totalLen += perLen * qty;
-  totalLen += perLenUsed * qty;
-
-  totalPrice += unitPrice * qty;
-  totalCars  += qty;
-
-  lines.push(`ความยาวรถ ${L} เมตร ความกว้าง ${W} เมตร${qty>1?` จำนวน ${qty} คัน`:''}`);
-}
-
-
-  if(lines.length===0){
-    return { text:'', totalTwo:0, totalThree:0, totalLen:0, totalPrice:0, itemsLine:'' };
+   function calcFlatbarAggregate(items){
+  if(!items.length){
+    return { text:'', totalPrice:0 };
   }
 
-  const parts=[];
-  if(totalB2  > 0) parts.push(`เหล็กแบน 2 ม. × ${totalB2} เส้น`);
-  if(totalB25 > 0) parts.push(`เหล็กแบน 2.5 ม. × ${totalB25} เส้น`);
-  if(totalB3  > 0) parts.push(`เหล็กแบน 3 ม. × ${totalB3} เส้น`);
-  if(totalB35 > 0) parts.push(`เหล็กแบน 3.5 ม. × ${totalB35} เส้น`);
-  const itemsLine = parts.join(', ');
+  let blocks = [];
+  let totalPrice = 0;
 
-  // show ความกว้างในหมายเหตุ (รวมค่าไม่ซ้ำ)
-  const uniqueW = [...new Set(items.map(x => x.W).filter(w => Number.isFinite(w)))];
-  const widthNote = uniqueW.length === 1
-    ? ` ${uniqueW[0]} ม.`
-    : (uniqueW.length > 1 ? ` ${uniqueW.map(w => w + ' ม.').join(', ')}` : '');
+  for(const {preset, qty} of items){
+    const p = preset;
+    const perCarPrice = p.pricePerCar;
+    const totalThis   = perCarPrice * qty;
+    totalPrice       += totalThis;
 
-  // เหล็กหัว-ท้าย (ชิ้น) ต่อคัน: ไม่มีผ้าขึ้นหน้า = 2 ชิ้น/คัน, ถ้ามี = 3 ชิ้น/คัน
-  const remarkPerCar = hasFront ? 3 : 2;
-  const remarkTotal  = remarkPerCar * (totalCars || 1);
-  const cornerBarsTotal = 4 * (totalCars || 1);
+    const carsText = qty > 1 ? ` × ${qty} คัน` : '';
 
-  const header = `📦 ชุดเหล็กแบนสำหรับติดตั้ง MP Flow 2.0 `;
-  const body = `\n${lines.join('\n')}\nสิ่งที่จะได้รับ : ${itemsLine} , เหล็กสำหรับติดตั้งหัวท้าย 2.4 ม. × ${remarkTotal} เส้น เหล็กสำหรับติดตั้งแนวตั้งมุม 0.6 ม. x ${cornerBarsTotal} เส้น และสกรูสำหรับติดตั้งแล้ว
-ยอดเหล็กแบน ${totalPrice.toLocaleString()} บาท`;
-  return { text: header + body, totalTwo: totalB2, totalThree: totalB3, totalLen, totalPrice, itemsLine };
-};
+    // คูณจำนวนเส้นตามจำนวนคัน
+    const longLines = (p.longBars || []).map(b =>
+      `เหล็กแบน ${b.len} ม. × ${b.qty * qty} เส้น`
+    ).join('\n');
+
+    const crossLines = (p.crossBars || []).map(b =>
+      `เหล็กสำหรับติดตั้งแนวขวาง  ${b.len} ม. × ${b.qty * qty} เส้น`
+    ).join('\n');
+
+    const cornerLines = (p.cornerBars || []).map(b =>
+      `เหล็กสำหรับติดตั้งแนวตั้งมุม ${b.len} ม. x ${b.qty * qty} เส้น`
+    ).join('\n');
+
+    const unitText = qty > 1
+      ? `รวมยอดชุดติดตั้ง ${perCarPrice.toLocaleString()} บาท/คัน × ${qty} คัน = ${totalThis.toLocaleString()} บาท`
+      : `รวมยอดชุดติดตั้ง ${perCarPrice.toLocaleString()} บาท/คัน`;
+
+    const block = `📦 ชุดเหล็กแบนสำหรับติดตั้ง MP Flow 2.0 
+ความยาวรถ ${p.length} เมตร ความกว้าง ${p.width} เมตร${carsText}
+
+สิ่งที่จะได้รับ : 
+${longLines}
+${crossLines}
+${cornerLines}
+และสกรูสำหรับติดตั้ง
+${unitText}`;
+
+    blocks.push(block);
+  }
+
+  return {
+    text: blocks.join('\n\n'),
+    totalPrice
+  };
+}
+
 
 
     flatbarForm.onsubmit = function(e){
@@ -684,7 +726,7 @@ Object.keys(priceList).forEach(k => { priceList[k].price += 10; });
 
       // เหล็กแบน (ไม่บังคับ, หลายรายการได้)
       const items = collectFlatbarItems();
-      const kit = items.length ? calcFlatbarAggregate(items, hasFrontEl.checked) : null;
+      const kit = items.length ? calcFlatbarAggregate(items) : null;
 
       // สร้างข้อความสรุปตามฟอร์แมตที่ขอ
       let out = 'ส่ง';
@@ -729,7 +771,7 @@ ${kit.text}`; }
 
       out += `
 
-รวมยอดทั้งหมด (MP Flow + เหล็กแบน) ${grand.toLocaleString()} บาท`;
+รวมยอดทั้งหมด (MP Flow + อุปกรณ์ติดตั้ง) ${grand.toLocaleString()} บาท`;
       out += `
 
 โอนชำระเมื่อได้รับสินค้า
@@ -832,7 +874,7 @@ idx++;
       let ship = total<5000?300:0; if(document.getElementById('summarySpecial').checked){ const ex=Math.floor(areaSum*5); ship += ex>2000?2000:ex; }
       const grand = Math.floor(total+ship); const dep = grand>=5000?Math.floor(grand*0.1):0; const bal = grand-dep;
 
-      let out = cust?`ส่ง\n${cust}\n\n${list}`:list;out += ship?`ค่าจัดส่ง ${fmt(ship)} บาท\n`:'ส่งฟรี ชำระเงินเมื่อได้รับของค่ะ\n\n'; out += `📌 สรุปยอดสั่งซื้อทั้งหมด\nยอดรวม ${fmt(grand)} บาท\n`; if(useFactory) out += `(ราคาโรงงาน เพจน้ำเงิน)\n`; if(useDiscount) out += `(ส่วนลดพิเศษ 5% = ${fmt(discountAmount)} บาท)\n`;  if(dep) out += `✅ ชำระมัดจำ 10% (${fmt(dep)} บาท)`; out += `\n COD ${fmt(bal)} บาท\n\n`; out += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 4-6 วัน`;
+      let out = cust?`ส่ง\n${cust}\n\n${list}`:list; out += `📌 สรุปยอดสั่งซื้อทั้งหมด\nยอดรวม ${fmt(grand)} บาท\n`; if(useFactory) out += `(ราคาโรงงาน เพจน้ำเงิน)\n`; if(useDiscount) out += `(ส่วนลดพิเศษ 5% = ${fmt(discountAmount)} บาท)\n`; out += ship?`ค่าจัดส่ง ${fmt(ship)} บาท\n`:'ส่งฟรี ชำระเงินเมื่อได้รับของค่ะ\n\n'; if(dep) out += `✅ ชำระมัดจำ 10% (${fmt(dep)} บาท)`; out += `\n COD ${fmt(bal)} บาท\n\n`; out += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 4-6 วัน`;
       const page = document.getElementById('pageSelect').value; const admin = document.getElementById('adminSelect').value; if(page) out += `\n\nเพจ: ${page}`; if(admin) out += `\nแอดมิน: ${admin}`;
       if (summaryRoundCloth && summaryRoundCloth.checked) {
 out += `\n(ผ้ากลม +10 บาท/ตร.ม.)`;
@@ -854,4 +896,3 @@ out += `\n(ผ้ากลม +10 บาท/ตร.ม.)`;
   </script>
 </body>
 </html>
-
