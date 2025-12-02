@@ -101,6 +101,8 @@
       <label><input type="checkbox" id="pondDiscount5" value="yes"> ใช้ส่วนลดพิเศษ 5%</label>
       <label><input type="checkbox" id="pondFactoryBlue" value="yes"> เพจ "น้ำเงิน ราคาโรงงาน" (ใช้ราคา 40/60/80 บาท/ตร.ม.)</label>
       <label><input type="checkbox" id="pondRoundCloth" value="yes"> ผ้ากลม (+10 บาท/ตร.ม.)</label>
+      <label><input type="checkbox" id="pondFlood20" value="yes"> โปรสู้ภัยน้ำท่วม ลด 20% (เฉพาะค่าสินค้า)</label>
+
       <div class="hint">เมื่อเลือกราคาโรงงาน: 0.3 = 40, 0.5 = 60, 0.75 = 80 บาท/ตร.ม.</div>
 
       <button type="submit" class="btn-primary">คำนวณ</button>
@@ -127,6 +129,8 @@
       <label><input type="checkbox" id="canalSpecialProvince" value="yes"> ส่งจังหวัดพัทลุง สตูล ปัตตานี ยะลา นราธิวาส (เพิ่ม 5 บาท/ตร.ม.)</label>
       <label><input type="checkbox" id="canalDiscount5" value="yes"> ใช้ส่วนลดพิเศษ 5%</label>
       <label><input type="checkbox" id="canalFactoryBlue" value="yes"> เพจ "น้ำเงิน ราคาโรงงาน" (LDPE 0.5 = 50 บาท/ตร.ม.)</label>
+      <label><input type="checkbox" id="canalFlood20" value="yes"> โปรสู้ภัยน้ำท่วม ลด 20% (เฉพาะค่าสินค้า)</label>
+
 
       <button type="submit" class="btn-primary">คำนวณ</button>
       <button type="button" id="canalReset" class="btn-warning hidden">คำนวณใหม่</button>
@@ -146,6 +150,7 @@
         <label><input type="radio" name="circleDiameter" value="10" required> 10 เมตร</label>
         <label><input type="radio" name="circleDiameter" value="12" required> 12 เมตร</label>
       </div>
+      <label><input type="checkbox" id="circularFlood20" value="yes"> โปรสู้ภัยน้ำท่วม ลด 20%</label> 
       <button type="submit" class="btn-primary">แสดงข้อมูล</button>
       <button type="button" id="circularReset" class="btn-warning hidden">เริ่มใหม่</button>
     </form>
@@ -175,6 +180,8 @@
       <button type="button" id="flatbarAddCloth" class="btn-secondary" style="margin-bottom:8px">+ เพิ่มรายการผ้า</button>
       <div class="hint">ค่าเริ่มต้นเป็น "ระบุเอง" (คิด 250 บาท/ตร.ม.) • ถ้าเลือกแบบสำเร็จ ระบบจะกรอกกว้าง×ยาวให้อัตโนมัติและคิดราคาตามชุดสำเร็จ</div>
       <label><input type="checkbox" id="flatbarDiscount5"> ใช้ส่วนลดพิเศษ 5% (เฉพาะผ้า)</label>
+      <label><input type="checkbox" id="flatbarFlood20"> โปรสู้ภัยน้ำท่วม ลด 20% (เฉพาะผ้า)</label>
+
       <hr style="opacity:.25; margin:16px 0">
 
       <label>คำนวณเหล็กแบน (ไม่บังคับ)</label>
@@ -274,6 +281,8 @@
       <label><input type="checkbox" id="summaryDiscount5"> ใช้ส่วนลดพิเศษ 5%</label>
       <label><input type="checkbox" id="summaryFactoryBlue"> เพจ "น้ำเงิน ราคาโรงงาน" (0.3L=40, 0.5L=50, 0.5H=60, 0.75H=80 บาท/ตร.ม.)</label>
       <label><input type="checkbox" id="summaryRoundCloth"> ผ้ากลม (+10 บาท/ตร.ม.)</label>
+      <label><input type="checkbox" id="summaryFlood20"> โปรสู้ภัยน้ำท่วม ลด 20% (เฉพาะค่าสินค้า)</label>
+
       <label>เลือกเพจ</label>
       <select id="pageSelect">
         <option value="">เลือกเพจ...</option>
@@ -343,6 +352,8 @@
     const pondDiscount5 = document.getElementById('pondDiscount5');
     const pondFactoryBlue = document.getElementById('pondFactoryBlue');
     const pondRoundCloth = document.getElementById('pondRoundCloth');
+    const pondFlood20 = document.getElementById('pondFlood20');
+
 
     pondForm.onsubmit = function(e){
       e.preventDefault();
@@ -372,8 +383,16 @@ Object.keys(priceList).forEach(k => { priceList[k].price += 10; });
       }else{
         const sel = priceList[size.value];
         let total = Math.floor(area * sel.price);
-        if(pondDiscount5.checked){ total = Math.floor(total * 0.95); }
-        let shipping = 0; if(total < 5000) shipping += 300; if(pondSpecialProvince.checked){ shipping += Math.min(Math.floor(5*area), 2000); }
+
+      // ไม่ให้ซ้อนกัน: ถ้าโปรน้ำท่วม 20% ให้ใช้ตัวนี้ก่อน
+      if (pondFlood20 && pondFlood20.checked) {
+        total = Math.floor(total * 0.8);   // ลด 20%
+      } else if (pondDiscount5 && pondDiscount5.checked) {
+        total = Math.floor(total * 0.95);  // ลด 5%
+      }
+
+        let shipping = 0;
+ if(total < 5000) shipping += 300; if(pondSpecialProvince.checked){ shipping += Math.min(Math.floor(5*area), 2000); }
         const sum = Math.floor(total + shipping);
         text += `📍 รายการ:\n`;
         text += `ผ้าพลาสติก ${sel.material} หนา ${size.value} มม. (${sel.price} บาท/ตร.ม.)\n`;
@@ -384,8 +403,17 @@ Object.keys(priceList).forEach(k => { priceList[k].price += 10; });
         if(pondRoundCloth.checked) {
     text += `(ผ้ากลม +10 บาท/ตร.ม.)\n`;
   }
-        if(pondFactoryBlue.checked) text += `(ราคาโรงงาน เพจน้ำเงิน)\n`;
-        if(pondDiscount5.checked) text += `(ส่วนลดพิเศษ 5%)\n`;
+        if (pondFactoryBlue.checked) {
+        text += `(ราคาโรงงาน เพจน้ำเงิน)\n`;
+      }
+
+      if (pondFlood20 && pondFlood20.checked) {
+        text += `(โปรสู้ภัยน้ำท่วม ลด 20%)\n`;
+      } else if (pondDiscount5 && pondDiscount5.checked) {
+        text += `(ส่วนลดพิเศษ 5%)\n`;
+      }
+
+
         text += `รบกวนลูกค้าตรวจสอบรายการให้ครบก่อนยืนยันนะคะ ✨\nหากเริ่มผลิตแล้ว จะไม่สามารถแก้ไขหรือยกเลิกได้ค่ะ\n\n`;
         if(shipping<=0) text += `(ส่งฟรี ชำระเงินเมื่อได้รับของค่ะ)`;
         if(sum>=5000){ const dep=Math.floor(sum*0.1), bal=Math.floor(sum-dep); text += `\n✅ ชำระมัดจำ 10% (${dep.toLocaleString()} บาท) เพื่อยืนยันคำสั่งซื้อ\n\n📦 แจ้งชื่อ-ที่อยู่ & เบอร์โทรศัพท์\n🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 4-6 วัน\nCOD ${bal.toLocaleString()} บาท โอนเมื่อได้รับของค่ะ 😉\n`; }
@@ -408,6 +436,7 @@ Object.keys(priceList).forEach(k => { priceList[k].price += 10; });
     const canalSpecialProvince = document.getElementById('canalSpecialProvince');
     const canalDiscount5 = document.getElementById('canalDiscount5');
     const canalFactoryBlue = document.getElementById('canalFactoryBlue');
+    const canalFlood20 = document.getElementById('canalFlood20');
 
     canalSizeRadios.forEach(r=>r.addEventListener('change',()=>{ if(r.value==='0.5'){ canalWidth.value=4; canalWidth.disabled=true; } else { canalWidth.disabled=false; } }));
 
@@ -419,25 +448,46 @@ Object.keys(priceList).forEach(k => { priceList[k].price += 10; });
       const ow=w, ol=l; if(d>0){ w=w + d*2 + 1; l=l + d*2 + 1; }
       const basePrice = 60; const pricePerSqm = (canalFactoryBlue && canalFactoryBlue.checked) ? 50 : basePrice; const mat = 'LDPE';
 
-      const area = w*l; let total = Math.floor(area * pricePerSqm);
-      let discountAmount=0; if(canalDiscount5.checked){ discountAmount = Math.floor(total*0.05); total -= discountAmount; }
-      let shipping = total<5000 ? 300 : 0; if(canalSpecialProvince.checked){ shipping += Math.floor(5*area); }
-      const sum = Math.floor(total + shipping);
+      const area = w*l; 
+      let total = Math.floor(area * pricePerSqm);
+      let discountAmount = 0;
 
-      let text = `📍 รายการ:\n`;
-      text += `ผ้าพลาสติก ${mat} หนา 0.5 มม. (${pricePerSqm} บาท/ตร.ม.)\n`;
-      text += `ขนาด ${ow} ม. × ${ol} ม.${d>0?` ลึก ${d} ม.`:''} = ${area.toLocaleString()} ตร.ม.\n(ขนาดผ้านี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 0.5 เมตรแล้ว)\n\n`;
-      text += `📌 สรุปยอดสั่งซื้อทั้งหมด: ${sum.toLocaleString()} บาท\n`;
-      if(canalFactoryBlue && canalFactoryBlue.checked){ text += `(ราคาโรงงาน เพจน้ำเงิน)\n`; }
-      if(canalDiscount5.checked){ text += `(ส่วนลดพิเศษ 5% = ${discountAmount.toLocaleString()} บาท)\n`; }
-      text += `รบกวนลูกค้าตรวจสอบรายการให้ครบก่อนยืนยันนะคะ ✨\nหากเริ่มผลิตแล้ว จะไม่สามารถแก้ไขหรือยกเลิกได้ค่ะ\n\n`;
-      if(shipping>0){ text += `ราคาผ้า ${total.toLocaleString()} บาท\nค่าจัดส่งรวม ${shipping.toLocaleString()} บาท\n`; } else { text += `(ส่งฟรี ชำระเงินเมื่อได้รับของค่ะ)\n`; }
-      text += `ยอดรวม ${sum.toLocaleString()} บาท\n\n`;
-      if(sum>=5000){ const dep=Math.floor(sum*0.1), bal=Math.floor(sum-dep); text += `✅ ชำระมัดจำ 10% (${dep.toLocaleString()} บาท) เพื่อยืนยันคำสั่งซื้อ\n\n📦 แจ้งชื่อ-ที่อยู่ & เบอร์โทรศัพท์\n🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 4-6 วัน\nCOD ${bal.toLocaleString()} บาท โอนเมื่อได้รับของค่ะ 😉\n`; }
-      else { text += `ยืนยันการสั่งซื้อแล้วแจ้งชื่อ-ที่อยู่ & เบอร์โทรศัพท์ค่ะ\n🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 4-6 วัน\nCOD ${sum.toLocaleString()} บาท โอนเมื่อได้รับของค่ะ 😉\n`; }
+      // ถ้ามีโปรสู้ภัยน้ำท่วม 20% ให้ใช้ตัวนี้ก่อน
+      if (canalFlood20 && canalFlood20.checked) {
+        discountAmount = Math.floor(total * 0.20);
+        total -= discountAmount;
+      } else if (canalDiscount5 && canalDiscount5.checked) {
+        // ถ้าไม่ได้ใช้ 20% ค่อยใช้ 5%
+        discountAmount = Math.floor(total * 0.05);
+        total -= discountAmount;
+      }
 
-      canalResult.value = text.trim(); canalCopy.classList.remove('hidden'); canalReset.classList.remove('hidden');
-    };
+
+      let shipping = total < 5000 ? 300 : 0;
+    if(canalSpecialProvince.checked){ shipping += Math.floor(5*area); }
+          const sum = Math.floor(total + shipping);
+
+          let text = `📍 รายการ:\n`;
+          text += `ผ้าพลาสติก ${mat} หนา 0.5 มม. (${pricePerSqm} บาท/ตร.ม.)\n`;
+          text += `ขนาด ${ow} ม. × ${ol} ม.${d>0?` ลึก ${d} ม.`:''} = ${area.toLocaleString()} ตร.ม.\n(ขนาดผ้านี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 0.5 เมตรแล้ว)\n\n`;
+          if (canalFactoryBlue && canalFactoryBlue.checked) {
+              text += `(ราคาโรงงาน เพจน้ำเงิน)\n`;
+            }
+
+            if (canalFlood20 && canalFlood20.checked) {
+              text += `(โปรสู้ภัยน้ำท่วม ลด 20% = ${discountAmount.toLocaleString()} บาท)\n`;
+            } else if (canalDiscount5.checked) {
+              text += `(ส่วนลดพิเศษ 5% = ${discountAmount.toLocaleString()} บาท)\n`;
+            }
+
+          text += `รบกวนลูกค้าตรวจสอบรายการให้ครบก่อนยืนยันนะคะ ✨\nหากเริ่มผลิตแล้ว จะไม่สามารถแก้ไขหรือยกเลิกได้ค่ะ\n\n`;
+          if(shipping>0){ text += `ราคาผ้า ${total.toLocaleString()} บาท\nค่าจัดส่งรวม ${shipping.toLocaleString()} บาท\n`; } else { text += `(ส่งฟรี ชำระเงินเมื่อได้รับของค่ะ)\n`; }
+          text += `ยอดรวม ${sum.toLocaleString()} บาท\n\n`;
+          if(sum>=5000){ const dep=Math.floor(sum*0.1), bal=Math.floor(sum-dep); text += `✅ ชำระมัดจำ 10% (${dep.toLocaleString()} บาท) เพื่อยืนยันคำสั่งซื้อ\n\n📦 แจ้งชื่อ-ที่อยู่ & เบอร์โทรศัพท์\n🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 4-6 วัน\nCOD ${bal.toLocaleString()} บาท โอนเมื่อได้รับของค่ะ 😉\n`; }
+          else { text += `ยืนยันการสั่งซื้อแล้วแจ้งชื่อ-ที่อยู่ & เบอร์โทรศัพท์ค่ะ\n🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 4-6 วัน\nCOD ${sum.toLocaleString()} บาท โอนเมื่อได้รับของค่ะ 😉\n`; }
+
+          canalResult.value = text.trim(); canalCopy.classList.remove('hidden'); canalReset.classList.remove('hidden');
+        };
     canalCopy.onclick = ()=>{ canalResult.select(); document.execCommand('copy'); alert('คัดลอกข้อความแล้ว'); };
     canalReset.onclick = ()=>{ canalForm.reset(); canalWidth.disabled=false; canalResult.value=''; canalCopy.classList.add('hidden'); canalReset.classList.add('hidden'); };
 
@@ -453,9 +503,22 @@ Object.keys(priceList).forEach(k => { priceList[k].price += 10; });
       const dia = document.querySelector('input[name="circleDiameter"]:checked');
       if(!dia){ alert('กรุณาเลือกขนาดบ่อกลม'); return; }
       const data = window.circularInfo[dia.value];
+      let price = data.price;
+
+      const circularFlood20 = document.getElementById('circularFlood20');
+      let floodDisc = 0;
+      if (circularFlood20 && circularFlood20.checked) {
+        floodDisc = Math.floor(price * 0.20);
+        price = price - floodDisc;
+      }
+
       let text = `📌 สรุปยอดสั่งซื้อทั้งหมด (บ่อกลม)\n`;
       text += `บ่อกลม เมทัลชีทบลูสโคป สูง 1.2 ม. เส้นผ่านศูนย์กลาง ${dia.value} เมตร\n`;
-      text += `ความจุประมาณ ${data.volume.toLocaleString()} ลิตร\nราคา ${data.price.toLocaleString()} บาท\n`;
+      text += `ความจุประมาณ ${data.volume.toLocaleString()} ลิตร\nราคา ${price.toLocaleString()} บาท\n`;
+      if (floodDisc > 0) {
+        text += `(โปรสู้ภัยน้ำท่วม ลด 20% -${floodDisc.toLocaleString()} บาท)\n`;
+      }
+
       text += data.price>=80000?`\nสั่งเกิน 80,000 ส่งพร้อมติดตั้งฟรี!`:`\n(ค่าจัดส่งหรือติดตั้ง คิดเพิ่มตามระยะทาง)`;
       text += `\n\nกรุณาตรวจสอบรายละเอียดสินค้าให้ครบถ้วนก่อนยืนยันการสั่งซื้อ`;
       circularResult.value = text.trim(); circularCopy.classList.remove('hidden'); circularReset.classList.remove('hidden');
@@ -744,11 +807,25 @@ ${kit.text}`; }
 
       // รวมยอดสุดท้าย (มีส่วนลด 5% สำหรับผ้า ถ้าติ๊ก)
       const applyDisc = document.getElementById('flatbarDiscount5').checked;
+      const applyFlood20 = document.getElementById('flatbarFlood20').checked;
+
       const clothBase = cloth.price;
-      const discAmt = applyDisc ? Math.floor(clothBase * 0.05) : 0;
-      const clothSum = clothBase - discAmt;
-      const steelSum = kit? kit.totalPrice : 0;
+      let discAmt = 0;
+      let clothSum = clothBase;
+
+      // ถ้ามีโปรน้ำท่วม ใช้ 20% อย่างเดียว
+      if (applyFlood20) {
+        discAmt = Math.floor(clothBase * 0.20);
+        clothSum = clothBase - discAmt;
+      } else if (applyDisc) {
+        // ถ้าไม่ได้ใช้ 20% ค่อยใช้ 5%
+        discAmt = Math.floor(clothBase * 0.05);
+        clothSum = clothBase - discAmt;
+      }
+
+      const steelSum = kit ? kit.totalPrice : 0;
       let subtotal = clothSum + steelSum;
+
 
       // ค่าจัดส่ง: ยอดรวมต่ำกว่า 2,000 มีค่าส่ง 300
       const ship = subtotal < 2000 ? 300 : 0;
@@ -758,11 +835,18 @@ ${kit.text}`; }
       let dep = 0; if(grand>5000){ dep = Math.floor(grand*0.1); }
       const cod = grand - dep;
 
-      if(discAmt>0){
-        out += `
+      if (discAmt > 0) {
+      out += `
 
-(ส่วนลดพิเศษ 5% สำหรับผ้า = ${discAmt.toLocaleString()} บาท)`;
+    (ส่วนลดค่าสินค้าผ้า = ${discAmt.toLocaleString()} บาท`;
+      if (applyFlood20) {
+        out += ` • โปรสู้ภัยน้ำท่วม 20%`;
+      } else if (applyDisc) {
+        out += ` • ส่วนลดพิเศษ 5%`;
       }
+      out += `)`;
+    }
+
       if(ship>0){
         out += `
 
@@ -776,7 +860,7 @@ ${kit.text}`; }
 
 โอนชำระเมื่อได้รับสินค้า
 ธนาคารกสิกรไทย
-ชชื่อบัญชี: บริษัทมนูธรรมพลาสติก
+ชื่อบัญชี: บริษัทมนูธรรมพลาสติก
 เลขที่:1888-5999-39 `;
       if(dep>0) out += `
 มัดจำ 10% (${dep.toLocaleString()} บาท)`;
@@ -828,7 +912,9 @@ ${dateText}`;
     document.getElementById('summaryForm').onsubmit = (e)=>{
       e.preventDefault();
       const cust = document.getElementById('custInfo').value.trim();
-      const useFactory = document.getElementById('summaryFactoryBlue').checked; const useDiscount = document.getElementById('summaryDiscount5').checked;
+      const useFactory = document.getElementById('summaryFactoryBlue').checked; 
+      const useDiscount = document.getElementById('summaryDiscount5').checked;
+      const useFlood   = document.getElementById('summaryFlood20').checked;
       const PRICE = useFactory ? { '0.3L':40, '0.5L':50, '0.5H':60, '0.75H':80 } : { '0.3L':40, '0.5L':60, '0.5H':65, '0.75H':85 };
       const MAT = c => c.endsWith('L')?'LDPE':'HDPE'; const THK = c => c.replace(/[LH]$/, ''); const fmt = n => Math.floor(n).toLocaleString();
 
@@ -870,11 +956,38 @@ if(q>1) list += `จำนวน ${q} ผืน\n`;
 idx++;
 });
       if(total===0) return alert('กรุณากรอกอย่างน้อย 1 รายการ');
-      let discountAmount=0; if(useDiscount){ discountAmount=Math.floor(total*0.05); total-=discountAmount; }
-      let ship = total<5000?300:0; if(document.getElementById('summarySpecial').checked){ const ex=Math.floor(areaSum*5); ship += ex>2000?2000:ex; }
-      const grand = Math.floor(total+ship); const dep = grand>=5000?Math.floor(grand*0.1):0; const bal = grand-dep;
+      let discountAmount = 0;
+      if (useFlood) {
+        // โปรสู้ภัยน้ำท่วม 20% มาก่อน
+        discountAmount = Math.floor(total * 0.20);
+        total -= discountAmount;
+      } else if (useDiscount) {
+        // ถ้าไม่ได้ใช้ 20% ค่อยใช้ 5%
+        discountAmount = Math.floor(total * 0.05);
+        total -= discountAmount;
+      }
 
-      let out = cust?`ส่ง\n${cust}\n\n${list}`:list; out += `📌 สรุปยอดสั่งซื้อทั้งหมด\nยอดรวม ${fmt(grand)} บาท\n`; if(useFactory) out += `(ราคาโรงงาน เพจน้ำเงิน)\n`; if(useDiscount) out += `(ส่วนลดพิเศษ 5% = ${fmt(discountAmount)} บาท)\n`; out += ship?`ค่าจัดส่ง ${fmt(ship)} บาท\n`:'ส่งฟรี ชำระเงินเมื่อได้รับของค่ะ\n\n'; if(dep) out += `✅ ชำระมัดจำ 10% (${fmt(dep)} บาท)`; out += `\n COD ${fmt(bal)} บาท\n\n`; out += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 4-6 วัน`;
+      let ship = total<5000?300:0; 
+      if(document.getElementById('summarySpecial').checked){
+      const ex = Math.floor(areaSum * 5);
+      ship += ex > 1500 ? 1500 : ex;   // ปรับเป็น 1500
+    }
+
+      const grand = Math.floor(total+ship); 
+      const dep = grand>=5000?Math.floor(grand*0.1):0; const bal = grand-dep;
+
+      let out = cust?`ส่ง\n${cust}\n\n${list}`:list; out += `📌 สรุปยอดสั่งซื้อทั้งหมด\nยอดรวม ${fmt(grand)} บาท\n`; 
+      if (useFactory) out += `(ราคาโรงงาน เพจน้ำเงิน)\n`;
+      if (discountAmount > 0) {
+        if (useFlood) {
+          out += `(โปรสู้ภัยน้ำท่วม ลด 20% = ${fmt(discountAmount)} บาท)\n`;
+        } else if (useDiscount) {
+          out += `(ส่วนลดพิเศษ 5% = ${fmt(discountAmount)} บาท)\n`;
+        }
+      }
+
+      out += ship?`ค่าจัดส่ง ${fmt(ship)} บาท\n`:'ส่งฟรี ชำระเงินเมื่อได้รับของค่ะ\n\n'; 
+      if(dep) out += `✅ ชำระมัดจำ 10% (${fmt(dep)} บาท)`; out += `\n COD ${fmt(bal)} บาท\n\n`; out += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 4-6 วัน`;
       const page = document.getElementById('pageSelect').value; const admin = document.getElementById('adminSelect').value; if(page) out += `\n\nเพจ: ${page}`; if(admin) out += `\nแอดมิน: ${admin}`;
       if (summaryRoundCloth && summaryRoundCloth.checked) {
 out += `\n(ผ้ากลม +10 บาท/ตร.ม.)`;
