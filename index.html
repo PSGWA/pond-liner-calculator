@@ -277,7 +277,7 @@
       </table>
       <button type="button" id="addItem" class="btn-secondary">+ เพิ่มรายการ</button>
 
-      <label style="margin-top:14px"><input type="checkbox" id="summarySpecial"> จังหวัดพิเศษ (+5 บาท/ตร.ม. สูงสุด 1,500 บาท)</label>
+      <label style="margin-top:14px"><input type="checkbox" id="summarySpecial"> จังหวัดพิเศษ (+5 บาท/ตร.ม. สูงสุด 2,000 บาท)</label>
       <label><input type="checkbox" id="summaryDiscount5"> ใช้ส่วนลดพิเศษ 5%</label>
       <label><input type="checkbox" id="summaryFactoryBlue"> เพจ "น้ำเงิน ราคาโรงงาน" (0.3L=40, 0.5L=50, 0.5H=60, 0.75H=80 บาท/ตร.ม.)</label>
       <label><input type="checkbox" id="summaryRoundCloth"> ผ้ากลม (+10 บาท/ตร.ม.)</label>
@@ -667,10 +667,10 @@ const FLATBAR_PRESETS = {
         const qty = Math.max(1, parseInt(tr.querySelector('.cq').value||1,10));
         if(type!=='custom'){
           const u = CLOTH_PRESETS[type]||0; const s = PRESET_SIZES[type]; const sum = u*qty; price+=sum; has = has || sum>0;
-          lines.push(`ขนาด ${s.w}x${s.l}${qty>1?` × ${qty}`:''} ราคา ${sum.toLocaleString()} บาท`); simple.push({w:s.w,l:s.l,qty,sum});
+          lines.push(`ขนาด ${s.w}x${s.l}${qty>1?` จำนวน ${qty} ผืน`:''} ราคา ${sum.toLocaleString()} บาท`);
         }else{
           if(!(cw>0 && cl>0)) continue; const area=cw*cl; const unit=Math.floor(area*250); const sum=unit*qty; price+=sum; has = has || sum>0;
-          lines.push(`ขนาด ${cw}x${cl}${qty>1?` × ${qty}`:''} ราคา ${sum.toLocaleString()} บาท`); simple.push({w:cw,l:cl,qty,sum});
+          lines.push(`ขนาด ${cw}x${cl}${qty>1?` จำนวน ${qty} ผืน`:''} ราคา ${sum.toLocaleString()} บาท`);
         }
       }
       return {has, text: lines.join('\n'), price, simple};
@@ -754,7 +754,7 @@ const FLATBAR_PRESETS = {
     ).join('\n');
 
     const unitText = qty > 1
-      ? `รวมยอดชุดติดตั้ง ${perCarPrice.toLocaleString()} บาท/คัน × ${qty} คัน = ${totalThis.toLocaleString()} บาท`
+      ? `รวมยอดชุดติดตั้ง ${perCarPrice.toLocaleString()} บาท/คัน จำนวน ${qty} คัน = ${totalThis.toLocaleString()} บาท`
       : `รวมยอดชุดติดตั้ง ${perCarPrice.toLocaleString()} บาท/คัน`;
 
     const block = `📦 ชุดเหล็กแบนสำหรับติดตั้ง MP Flow 2.0 
@@ -970,13 +970,20 @@ idx++;
       let ship = total<5000?300:0; 
       if(document.getElementById('summarySpecial').checked){
       const ex = Math.floor(areaSum * 5);
-      ship += ex > 1500 ? 1500 : ex;   // ปรับเป็น 1500
+      ship += ex > 2000 ? 2000 : ex;   // ปรับเป็น 1500
     }
 
       const grand = Math.floor(total+ship); 
       const dep = grand>=5000?Math.floor(grand*0.1):0; const bal = grand-dep;
 
-      let out = cust?`ส่ง\n${cust}\n\n${list}`:list; out += `📌 สรุปยอดสั่งซื้อทั้งหมด\nยอดรวม ${fmt(grand)} บาท\n`; 
+      let out = cust ? `ส่ง\n${cust}\n\n${list}` : list;
+      // ให้ “ค่าจัดส่ง/ส่งฟรี” มาก่อนสรุปยอด
+      out += ship ? `ค่าจัดส่ง ${fmt(ship)} บาท\n\n` : `ส่งฟรี ชำระเงินเมื่อได้รับของค่ะ\n\n`;
+
+      // แล้วค่อย “สรุปยอด”
+      out += `📌 สรุปยอดสั่งซื้อทั้งหมด\nยอดรวม ${fmt(grand)} บาท\n`;
+
+      // หมายเหตุ/โปรต่างๆ วางต่อท้ายสรุปยอดได้เหมือนเดิม
       if (useFactory) out += `(ราคาโรงงาน เพจน้ำเงิน)\n`;
       if (discountAmount > 0) {
         if (useFlood) {
@@ -986,7 +993,6 @@ idx++;
         }
       }
 
-      out += ship?`ค่าจัดส่ง ${fmt(ship)} บาท\n`:'ส่งฟรี ชำระเงินเมื่อได้รับของค่ะ\n\n'; 
       if(dep) out += `✅ ชำระมัดจำ 10% (${fmt(dep)} บาท)`; out += `\n COD ${fmt(bal)} บาท\n\n`; out += `🚚 สินค้าจะจัดส่งถึงลูกค้าภายใน 4-6 วัน`;
       const page = document.getElementById('pageSelect').value; const admin = document.getElementById('adminSelect').value; if(page) out += `\n\nเพจ: ${page}`; if(admin) out += `\nแอดมิน: ${admin}`;
       if (summaryRoundCloth && summaryRoundCloth.checked) {
