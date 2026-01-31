@@ -98,7 +98,6 @@
       <label>ความลึก (เมตร, ไม่บังคับ):</label>
       <input type="number" id="pondDepth" step="0.01" placeholder="กรอกความลึก (ถ้ามี)">
 
-      <label><input type="checkbox" id="pondSpecialProvince" value="yes"> ส่งจังหวัดพัทลุง สตูล ปัตตานี ยะลา นราธิวาส (เพิ่ม 5 บาท/ตร.ม. สูงสุด 2,000)</label>
       <label><input type="checkbox" id="pondDiscount5" value="yes"> ใช้ส่วนลดพิเศษ 5%</label>
       <label><input type="checkbox" id="pondFactoryBlue" value="yes"> เพจ "น้ำเงิน ราคาโรงงาน" (ใช้ราคา 40/60/80 บาท/ตร.ม.)</label>
       <label><input type="checkbox" id="pondRoundCloth" value="yes"> ผ้ากลม (+10 บาท/ตร.ม.)</label>
@@ -127,7 +126,6 @@
       <input type="number" id="canalLength" step="0.01" placeholder="กรอกความยาว" required>
       <label>ความลึก (เมตร, ไม่บังคับ):</label>
       <input type="number" id="canalDepth" step="0.01" placeholder="กรอกความลึก (ถ้ามี)">
-      <label><input type="checkbox" id="canalSpecialProvince" value="yes"> ส่งจังหวัดพัทลุง สตูล ปัตตานี ยะลา นราธิวาส (เพิ่ม 5 บาท/ตร.ม.)</label>
       <label><input type="checkbox" id="canalDiscount5" value="yes"> ใช้ส่วนลดพิเศษ 5%</label>
       <label><input type="checkbox" id="canalFactoryBlue" value="yes"> เพจ "น้ำเงิน ราคาโรงงาน" (LDPE 0.5 = 50 บาท/ตร.ม.)</label>
       
@@ -306,7 +304,6 @@
       </table>
       <button type="button" id="addItem" class="btn-secondary">+ เพิ่มรายการ</button>
 
-      <label style="margin-top:14px"><input type="checkbox" id="summarySpecial"> จังหวัดพิเศษ (+5 บาท/ตร.ม. สูงสุด 2,000 บาท)</label>
       <label><input type="checkbox" id="summaryDiscount5"> ใช้ส่วนลดพิเศษ 5%</label>
       <label><input type="checkbox" id="summaryFactoryBlue"> เพจ "น้ำเงิน ราคาโรงงาน" (0.3L=40, 0.5L=50, 0.5H=60, 0.75H=80 บาท/ตร.ม.)</label>
       <label><input type="checkbox" id="summaryRoundCloth"> ผ้ากลม (+10 บาท/ตร.ม.)</label>
@@ -392,6 +389,22 @@
       if(isFactory){ return { '0.3':{price:40, material:'LDPE'}, '0.5':{price:60, material:'HDPE'}, '0.75':{price:80, material:'HDPE'} }; }
       return { '0.3':{price:40, material:'LDPE'}, '0.5':{price:65, material:'HDPE'}, '0.75':{price:85, material:'HDPE'} };
     }
+    // --- Shipping by weight ---
+const SHIP_RATE_PER_KG = 5;
+const SHIP_MAX = 4000;
+
+function clampShipping(x){
+  return Math.min(SHIP_MAX, Math.max(0, Math.ceil(x)));
+}
+function calcShipByWeightKg(weightKg){
+  return clampShipping(weightKg * SHIP_RATE_PER_KG);
+}
+function thkToKgPerSqm(thk){ // mm: 0.3 / 0.5 / 0.75
+  const t = Number(thk);
+  return (t === 0.3) ? 0.3 : (t === 0.5) ? 0.5 : (t === 0.75) ? 0.75 : 0;
+}
+
+
 
     // ---------- POND LOGIC ----------
     const pondForm = document.getElementById('pondForm');
@@ -401,7 +414,6 @@
     const pondResult = document.getElementById('pondResult');
     const pondCopy = document.getElementById('pondCopy');
     const pondReset = document.getElementById('pondReset');
-    const pondSpecialProvince = document.getElementById('pondSpecialProvince');
     const pondDiscount5 = document.getElementById('pondDiscount5');
     const pondFactoryBlue = document.getElementById('pondFactoryBlue');
     const pondRoundCloth = document.getElementById('pondRoundCloth');
@@ -437,7 +449,7 @@ Object.keys(priceList).forEach(k => { priceList[k].price += 10; });
         const sel = priceList[size.value];
         let total = Math.floor(area * sel.price);
 
-      // ไม่ให้ซ้อนกัน: ถ้าโปรน้ำท่วม 20% ให้ใช้ตัวนี้ก่อน
+      
       if (pondDiscount5 && pondDiscount5.checked) {
         text += `(โปรรีวิว ลด 5%)\n`;
       }
@@ -447,16 +459,19 @@ Object.keys(priceList).forEach(k => { priceList[k].price += 10; });
         total = Math.floor(total * 0.95);
       }
 
-      let shipping = 0;
-      if(total < 5000) shipping += 300;
-        if(pondSpecialProvince.checked){ shipping += Math.min(Math.floor(5*area), 2000); }
+      // ค่าส่งตามน้ำหนัก
+        const kg = area * thkToKgPerSqm(parseFloat(size.value));  // น้ำหนักรวม (กก.)
+        let shipping = calcShipByWeightKg(kg);
+
         const sum = Math.floor(total + shipping);
+
         text += `📍 รายการ:\n`;
         text += `ผ้าพลาสติก ${sel.material} หนา ${size.value} มม. (${sel.price} บาท/ตร.ม.)\n`;
         text += `ขนาด ${ow} ม. × ${ol} ม.${d>0?` ลึก ${d} ม.`:''}\n`;
         text += `ผ้าขนาด ${w} ม. × ${l} ม. = ${area.toLocaleString()} ตร.ม.\n(ขนาดผ้านี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 1 เมตรแล้ว)\n\n`;
         if(shipping>0){ text += `ราคาผ้า ${total.toLocaleString()} บาท\nค่าจัดส่ง ${shipping.toLocaleString()} บาท\n`; }
         text += `📌 สรุปยอดสั่งซื้อทั้งหมด: ${sum.toLocaleString()} บาท\n`;
+        text += `น้ำหนักประมาณ ${kg.toFixed(1)} กก.\n`;
         if(pondRoundCloth.checked) {
     text += `(ผ้ากลม +10 บาท/ตร.ม.)\n`;
   }
@@ -483,7 +498,6 @@ const canalResult = document.getElementById('canalResult');
 const canalCopy = document.getElementById('canalCopy');
 const canalReset = document.getElementById('canalReset');
 const canalSizeRadios = document.querySelectorAll('input[name="canalSize"]');
-const canalSpecialProvince = document.getElementById('canalSpecialProvince');
 const canalDiscount5 = document.getElementById('canalDiscount5');
 const canalFactoryBlue = document.getElementById('canalFactoryBlue');
 
@@ -527,16 +541,11 @@ canalForm.onsubmit = function(e){
     total = Math.floor(total * 0.95);
   }
 
-  // ค่าส่ง
-  let shipping = 0;
-  if(total < 5000) shipping += 300;
-
-  // จังหวัดพิเศษ +5/ตร.ม. (max 2,000)
-  if(canalSpecialProvince.checked){
-    shipping += Math.min(Math.floor(area * 5), 2000);
-  }
-
+  // ค่าส่งตามน้ำหนัก (LDPE 0.5 = 0.5 kg/ตร.ม.)
+  const kg = area * 0.5;
+  const shipping = calcShipByWeightKg(kg);
   const sum = Math.floor(total + shipping);
+
   const dep = sum >= 5000 ? Math.floor(sum * 0.1) : 0;
   const bal = sum - dep;
 
@@ -544,6 +553,7 @@ canalForm.onsubmit = function(e){
   text += `ผ้าพลาสติก ${mat} หนา 0.5 มม. (${pricePerSqm} บาท/ตร.ม.)\n`;
   text += `ขนาด ${ow} ม. × ${ol} ม.${d>0?` ลึก ${d} ม.`:''}\n`;
   text += `ผ้าขนาด ${w} ม. × ${l} ม. = ${area.toLocaleString()} ตร.ม.\n\n`;
+  text += `น้ำหนักประมาณ ${kg.toFixed(1)} กก.\n`;
 
   if(canalDiscount5.checked){
     text += `(โปรรีวิว ลด 5%)\n`;
@@ -627,16 +637,22 @@ geoForm.onsubmit = function(e){
   const unit = (grade.value === '150') ? 25 : 30;
   const base = Math.floor(area * unit);
 
-  // ค่าส่งให้ “เข้ากฎเดียวกับหน้าอื่น” (คุณจะเปลี่ยนเป็นส่งฟรีเสมอก็ได้)
-  const ship = base < 5000 ? 300 : 0;
-  const sum = base + ship;
+// ค่าส่งตามน้ำหนัก Geo (150g=0.15, 200g=0.20 kg/ตร.ม.)
+const kgPerSqm = (grade.value === '150') ? 0.15 : 0.20;
+const kg = area * kgPerSqm;
+const ship = calcShipByWeightKg(kg);
+const sum = base + ship;
 
-  let text = `ผ้าใยGeotextile ทางเราจะส่งไปเป็นม้วนผ้าหน้ากว้าง 4 เมตรนะคะ\n`;
-  text += `พื้นที่จะเท่ากันค่ะ\n`;
-  text += `เวลาใช้งานลูกค้าสามารถนำไปตัดแต่ง วางตามบริเวณต่างๆได้ตามที่ต้องการได้เลยค่ะ\n`;
-  text += `ขนาดที่คุณลูกค้าต้องการคือ ${w}x${l} ม.\n`;
-  text += `ทางเราจะจัดส่งเป็นม้วนขนาด 4x${rollL}ม.ค่ะ\n`;
-  text += `ราคา ${sum.toLocaleString()} บาทรวมส่งค่ะ`;
+
+ let text = `ผ้าใย Geotextile ทางเราจะส่งเป็นม้วนหน้ากว้าง 4 เมตรนะคะ\n`;
+text += `พื้นที่จะเท่ากันค่ะ สามารถนำไปตัดแต่งใช้งานได้\n\n`;
+text += `ขนาดที่ต้องการ ${w}x${l} ม. = ${area.toLocaleString()} ตร.ม.\n`;
+text += `จัดส่งเป็นม้วน 4x${rollL} ม.\n`;
+text += `น้ำหนักประมาณ ${kg.toFixed(1)} กก.\n\n`;
+text += `ราคา Geo ${base.toLocaleString()} บาท\n`;
+text += `ค่าส่ง ${ship.toLocaleString()} บาท\n`;
+text += `รวม ${sum.toLocaleString()} บาท`;
+
 
   geoResult.value = text.trim();
   geoCopy.classList.remove('hidden');
@@ -777,24 +793,45 @@ const FLATBAR_PRESETS = {
 }
 
 
-    function collectCloth(){
-      const rows = [...clothTableBody.querySelectorAll('tr')];
-      let has=false, price=0; let lines=[]; let simple=[];
-      for(const tr of rows){
-        const type = tr.querySelector('.ptype').value;
-        const cw = parseFloat(tr.querySelector('.cw').value||0);
-        const cl = parseFloat(tr.querySelector('.cl').value||0);
-        const qty = Math.max(1, parseInt(tr.querySelector('.cq').value||1,10));
-        if(type!=='custom'){
-          const u = CLOTH_PRESETS[type]||0; const s = PRESET_SIZES[type]; const sum = u*qty; price+=sum; has = has || sum>0;
-          lines.push(`ขนาด ${s.w}x${s.l}${qty>1?` จำนวน ${qty} ผืน`:''} ราคา ${sum.toLocaleString()} บาท`);
-        }else{
-          if(!(cw>0 && cl>0)) continue; const area=cw*cl; const unit=Math.floor(area*250); const sum=unit*qty; price+=sum; has = has || sum>0;
-          lines.push(`ขนาด ${cw}x${cl}${qty>1?` จำนวน ${qty} ผืน`:''} ราคา ${sum.toLocaleString()} บาท`);
-        }
-      }
-      return {has, text: lines.join('\n'), price, simple};
+   function collectCloth(){
+  const rows = [...clothTableBody.querySelectorAll('tr')];
+  let has=false, price=0; 
+  let lines=[]; 
+  let simple=[];
+  let areaTotal = 0;
+
+  for(const tr of rows){
+    const type = tr.querySelector('.ptype').value;
+    const cw = parseFloat(tr.querySelector('.cw').value||0);
+    const cl = parseFloat(tr.querySelector('.cl').value||0);
+    const qty = Math.max(1, parseInt(tr.querySelector('.cq').value||1,10));
+
+    if(type!=='custom'){
+      const u = CLOTH_PRESETS[type]||0;
+      const s = PRESET_SIZES[type];
+      const area = s.w * s.l;
+      areaTotal += area * qty;
+
+      const sum = u*qty;
+      price += sum; 
+      has = has || sum>0;
+      lines.push(`ขนาด ${s.w}x${s.l}${qty>1?` จำนวน ${qty} ผืน`:''} ราคา ${sum.toLocaleString()} บาท`);
+    }else{
+      if(!(cw>0 && cl>0)) continue;
+      const area = cw*cl;
+      areaTotal += area * qty;
+
+      const unit=Math.floor(area*250);
+      const sum=unit*qty;
+      price+=sum; 
+      has = has || sum>0;
+      lines.push(`ขนาด ${cw}x${cl}${qty>1?` จำนวน ${qty} ผืน`:''} ราคา ${sum.toLocaleString()} บาท`);
     }
+  }
+
+  return {has, text: lines.join('\n'), price, simple, areaTotal};
+}
+
 
    function pickBars(len){
   const L = Number(len);
@@ -945,8 +982,11 @@ ${kit.text}`; }
 
 
       // ค่าจัดส่ง: ยอดรวมต่ำกว่า 2,000 มีค่าส่ง 300
-      const ship = subtotal < 2000 ? 300 : 0;
-      const grand = subtotal + ship;
+      // น้ำหนักผ้า MP Flow 2.0 = 2 kg/ตร.ม.
+const kg = (cloth.areaTotal || 0) * 2.0;
+const ship = calcShipByWeightKg(kg);
+const grand = subtotal + ship;
+
 
       // มัดจำ 10% เมื่อยอดรวมเกิน 5,000
       let dep = 0; if(grand>5000){ dep = Math.floor(grand*0.1); }
@@ -956,10 +996,8 @@ ${kit.text}`; }
   out += `\n\n(ส่วนลดค่าสินค้าผ้า = ${discAmt.toLocaleString()} บาท • ส่วนลดพิเศษ 5%)`;
 }
 
-if (ship > 0) {
-  out += `\n\nค่าจัดส่ง ${ship.toLocaleString()} บาท`;
-}
-
+out += `\n\nน้ำหนักผ้าประมาณ ${kg.toFixed(1)} กก.`;
+out += `\nค่าจัดส่ง ${ship.toLocaleString()} บาท`;
 out += `\n\nรวมยอดทั้งหมด (MP Flow + อุปกรณ์ติดตั้ง) ${grand.toLocaleString()} บาท`;
 out += `\n\nโอนชำระเมื่อได้รับสินค้า
 ธนาคารกสิกรไทย
@@ -970,9 +1008,9 @@ if (dep > 0) out += `\nมัดจำ 10% (${dep.toLocaleString()} บาท)`;
 out += `\nCOD ${cod.toLocaleString()}`;
 
 flatbarResult.value = out.trim();
-flatbarCopy.classList.remove('hidden');
 flatbarReset.classList.remove('hidden');
- flatbarCopy.classList.remove('hidden'); flatbarReset.classList.remove('hidden');
+ flatbarCopy.classList.remove('hidden'); 
+ flatbarReset.classList.remove('hidden');
     };
     document.getElementById('flatbarCopy').onclick = ()=>{ flatbarResult.select(); document.execCommand('copy'); alert('คัดลอกข้อความแล้ว'); };
     flatbarReset.onclick = ()=>{
@@ -1020,7 +1058,9 @@ flatbarReset.classList.remove('hidden');
       const geoL = parseFloat(document.getElementById('summaryGeoLength').value || 0);
       const useDiscount10 = document.getElementById('summaryDiscount10').checked;
 
-      let total=0, areaSum=0, list='', idx=1; tbody.querySelectorAll('tr').forEach(tr=>{
+      let total=0, areaSum=0, weightKgSum=0, list='', idx=1;
+
+      tbody.querySelectorAll('tr').forEach(tr=>{
 const code = tr.querySelector('.t').value;
 const w = parseFloat(tr.querySelector('.w').value||0);
 const l = parseFloat(tr.querySelector('.l').value||0);
@@ -1045,6 +1085,10 @@ pricePer += 10; // ผ้ากลม +10 บาท/ตร.ม.
 
 
 const area = aw*al;
+const thk = Number(THK(code)); // "0.3" / "0.5" / "0.75"
+const kg = area * thkToKgPerSqm(thk) * q;
+weightKgSum += kg;
+
 const cost = Math.floor(area * pricePer * q);
 total += cost;
 areaSum += area*q;
@@ -1067,6 +1111,9 @@ idx++;
         if(!(geoW>0 && geoL>0)) return alert('กรุณากรอกขนาด Geotextile กว้าง x ยาว');
 
         geoArea = geoW * geoL;
+        const geoKgPerSqm = geo150 ? 0.15 : 0.20;
+        weightKgSum += geoArea * geoKgPerSqm;
+
         const unit = geo150 ? 25 : 30;
 
         // ส่งเป็นม้วนหน้ากว้าง 4 เมตร
@@ -1099,13 +1146,7 @@ if (useDiscount10 && itemsTotal > 0 && geoTotalSafe > 0) {
 let subtotalItems = (itemsTotal + geoTotalSafe) - discountAmount;
 
 // --- ค่าส่ง ---
-let ship = subtotalItems < 5000 ? 300 : 0;
-
-if (document.getElementById('summarySpecial').checked) {
-  const ex = Math.floor(areaSum * 5);
-  ship += ex > 2000 ? 2000 : ex;
-}
-
+let ship = calcShipByWeightKg(weightKgSum);
 const grand = Math.floor(subtotalItems + ship);
 const dep = grand >= 5000 ? Math.floor(grand * 0.1) : 0;
 const bal = grand - dep;
@@ -1113,6 +1154,8 @@ const bal = grand - dep;
 
       let out = cust ? `ส่ง\n${cust}\n\n${list}${geoText}` : `${list}${geoText}`;
       // ให้ “ค่าจัดส่ง/ส่งฟรี” มาก่อนสรุปยอด
+      out += `น้ำหนักรวมประมาณ ${weightKgSum.toFixed(1)} กก.\n`;
+
       out += ship ? `ค่าจัดส่ง ${fmt(ship)} บาท\n\n` : `ส่งฟรี ชำระเงินเมื่อได้รับของค่ะ\n\n`;
 
       // แล้วค่อย “สรุปยอด”
@@ -1122,7 +1165,7 @@ const bal = grand - dep;
       if (useFactory) out += `(ราคาโรงงาน เพจน้ำเงิน)\n`;
       if (discountAmount > 0) {
   if (useDiscount10 && itemsTotal > 0 && geoTotalSafe > 0) {
-    out += `(ส่วนลด 10% (โปรรีวิวผ้า+geo) = ${fmt(discountAmount)} บาท)\n`;
+    out += `(ส่วนลด 10% (โปรรีวิวพลาสติก+geotextile) = ${fmt(discountAmount)} บาท)\n`;
   } else if (useDiscount) {
     out += `(ส่วนลดพิเศษ 5% = ${fmt(discountAmount)} บาท)\n`;
   }
