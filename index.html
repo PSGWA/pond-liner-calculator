@@ -541,10 +541,9 @@
   • 601–800 กม. = 10,000 บาท<br>
   • เกิน 800 กม. = คิดค่าจัดส่งตามจริง<br>
   ✅ โปรส่วนลด:<br>
-  • ซื้อ 2 บ่อ ลด 3,000 บาท<br>
-  • ซื้อ 3 บ่อ ลด 6,000 บาท<br>
-  • ซื้อ 4 บ่อ ลด 10,000 บาท<br>
-  • ซื้อ 6 บ่อขึ้นไป ลด 20,000 บาท<br>
+  • ซื้อ 2–3 บ่อ ลด 10%<br>
+  • ซื้อ 4–5 บ่อ ลด 15%<br>
+  • ซื้อ 6 บ่อขึ้นไป ลด 20%<br>
   ⚠️ พื้นที่พิเศษ เช่น เกาะ ดอย ชายแดน หรือพื้นที่เข้าถึงยาก อาจมีค่าใช้จ่ายเพิ่มเติมตามจริง
 </div>
 
@@ -781,7 +780,7 @@
         <label style="margin:0; white-space:nowrap">ระยะทางจัดส่ง HydroPod (กม.):</label>
         <input type="number" id="hydroDistanceSummary" min="0" step="1" placeholder="เช่น 150" style="width:130px">
       </div>
-      <div class="hint">ส่วนลดตามจำนวน HydroPod: 2 บ่อ = -3,000 / 3 บ่อ = -6,000 / 4 บ่อ = -10,000 / 6+ บ่อ = -20,000 บาท • ฟรีค่าส่ง ≤200 กม.</div>
+      <div class="hint">ส่วนลดตามจำนวน HydroPod: 2–3 บ่อ ลด 10% / 4–5 บ่อ ลด 15% / 6+ บ่อ ลด 20% • ฟรีค่าส่ง ≤200 กม.</div>
 
       <label>เลือกเพจ</label>
       <select id="pageSelect">
@@ -1491,10 +1490,9 @@ function calcCircularShipping(distanceKm){
 }
 
 function calcCircularDiscount(totalQty){
-  if (totalQty >= 6) return 20000;
-  if (totalQty >= 4) return 10000;
-  if (totalQty >= 3) return 6000;
-  if (totalQty >= 2) return 3000;
+  if (totalQty >= 6) return 20;
+  if (totalQty >= 4) return 15;
+  if (totalQty >= 2) return 10;
   return 0;
 }
  const circularDistance = document.getElementById('circularDistance');
@@ -1535,7 +1533,8 @@ circularForm.onsubmit = function(e){
 `;
   }
 
-  const discount = calcCircularDiscount(totalQty);
+  const discRate = calcCircularDiscount(totalQty);
+  const discount = discRate > 0 ? Math.floor(fullTotal * discRate / 100) : 0;
   const afterDiscount = Math.max(0, fullTotal - discount);
 
   const applyDisc3 = document.getElementById('circularDiscount3')?.checked;
@@ -1556,22 +1555,18 @@ circularForm.onsubmit = function(e){
   out += `📌 สรุปยอดสั่งซื้อทั้งหมด\n`;
   out += `ยอดเต็ม ${fmt(fullTotal)} บาท\n`;
 
-if(discount > 0){
-  out += `ส่วนลด (จำนวนบ่อ) ${fmt(discount)} บาท\n`;
-  out += `ยอดหลังหักส่วนลด ${fmt(afterDiscount)} บาท\n`;
-}
+  if(discount > 0){
+    out += `ส่วนลด ${discRate}% (${totalQty} บ่อ) = -${fmt(discount)} บาท\n`;
+  }
 
-if(disc3Amt > 0){
-  out += `ส่วนลด 3% = -${fmt(disc3Amt)} บาท\n`;
-  out += `ยอดสินค้าหลังหักส่วนลด ${fmt(afterDiscount3)} บาท\n`;
-}
-
-
+  if(disc3Amt > 0){
+    out += `ส่วนลด 3% = -${fmt(disc3Amt)} บาท\n`;
+  }
 
   if(isActualShipping){
     out += `ระยะทาง ${fmt(distanceKm)} กม.\n`;
     out += `ค่าส่ง คิดตามจริง\n`;
-    out += `ยอดรวม รอแจ้งค่าส่งจริง\n\n`;
+    out += `ยอดรวมสุทธิ รอแจ้งค่าส่งจริง\n\n`;
     out += `หมายเหตุ: พื้นที่พิเศษ เช่น เกาะ ดอย ชายแดน หรือพื้นที่เข้าถึงยาก อาจมีค่าใช้จ่ายเพิ่มเติมตามจริง\n\n`;
     out += `🚚 ระยะเวลาจัดส่ง / ติดตั้ง\n`;
     out += `จะมีทีมติดตั้งโทรไปนัดหมายอีกครั้งนะคะ`;
@@ -1582,15 +1577,10 @@ if(disc3Amt > 0){
 
     out += `ระยะทาง ${fmt(distanceKm)} กม.\n`;
     out += `ค่าส่ง ${fmt(shipping)} บาท\n`;
-    out += `ยอดรวม ${fmt(grandTotal)} บาท\n\n`;
+    out += `ยอดรวมสุทธิ ${fmt(grandTotal)} บาท\n\n`;
 
     out += `✅ ชำระมัดจำ 20% = ${fmt(deposit)} บาท\n`;
     out += `✅ ยอดคงเหลือ ${fmt(cod)} บาท ชำระเมื่อติดตั้งเสร็จ\n\n`;
-
-    out += `ช่องทางชำระเงินมัดจำ\n`;
-    out += `ธนาคารกสิกรไทย\n`;
-    out += `ชื่อบัญชี: บริษัทมนูธรรมพลาสติก\n`;
-    out += `เลขที่บัญชี: 1888-5999-39\n\n`;
 
     out += `🚚 ระยะเวลาจัดส่ง / ติดตั้ง\n`;
     out += `จะมีทีมติดตั้งโทรไปนัดหมายอีกครั้งนะคะ`;
@@ -2045,7 +2035,7 @@ out += `\n\nรวมยอดทั้งหมด (${totalLabel}) ${grand.toLo
   }
 
   function buildCustomerText({
-    cust, list, geoText, hydroText, hydroNetTotal, hydroQtyDiscount, hydroShip, hydroQty,
+    cust, list, geoText, hydroText, hydroNetTotal, hydroQtyDiscount, hydroDiscRate, hydroShip, hydroQty,
     fullItems, discountAmount, netItems, ship, grand, dep, bal, summaryDiscRate
   }){
     let out = cust ? `ส่ง\n${cust}\n\n` : '';
@@ -2065,7 +2055,7 @@ out += `\n\nรวมยอดทั้งหมด (${totalLabel}) ${grand.toLo
     if(hydroText){
       if(hydroQtyDiscount > 0){
         out += `ยอดรวม HydroPod ${fmt(hydroNetTotal + hydroQtyDiscount)} บาท\n`;
-        out += `ส่วนลดตามจำนวน ${hydroQty} บ่อ = -${fmt(hydroQtyDiscount)} บาท\n`;
+        out += `ส่วนลด ${hydroDiscRate}% (${hydroQty} บ่อ) = -${fmt(hydroQtyDiscount)} บาท\n`;
         out += `ยอดสุทธิ HydroPod ${fmt(hydroNetTotal)} บาท\n`;
       }
       out += hydroShip > 0 ? `ค่าจัดส่ง HydroPod ${fmt(hydroShip)} บาท\n` : `ค่าจัดส่ง HydroPod ฟรี\n`;
@@ -2080,7 +2070,7 @@ out += `\n\nรวมยอดทั้งหมด (${totalLabel}) ${grand.toLo
   }
 
  function buildAdminText({
-  cust, list, geoText, hydroText, hydroNetTotal, hydroQtyDiscount, hydroShip, hydroQty,
+  cust, list, geoText, hydroText, hydroNetTotal, hydroQtyDiscount, hydroDiscRate, hydroShip, hydroQty,
   fullItems, discountAmount, netItems, ship, grand, dep, bal,
   weightKgSum, page, admin, summaryRoundClothChecked, summaryDiscRate
 }){
@@ -2101,7 +2091,7 @@ out += `\n\nรวมยอดทั้งหมด (${totalLabel}) ${grand.toLo
     if(hydroText){
       if(hydroQtyDiscount > 0){
         out += `ยอดรวม HydroPod ${fmt(hydroNetTotal + hydroQtyDiscount)} บาท\n`;
-        out += `ส่วนลดตามจำนวน ${hydroQty} บ่อ = -${fmt(hydroQtyDiscount)} บาท\n`;
+        out += `ส่วนลด ${hydroDiscRate}% (${hydroQty} บ่อ) = -${fmt(hydroQtyDiscount)} บาท\n`;
         out += `ยอดสุทธิ HydroPod ${fmt(hydroNetTotal)} บาท\n`;
       }
       out += hydroShip > 0 ? `ค่าจัดส่ง HydroPod ${fmt(hydroShip)} บาท\n` : `ค่าจัดส่ง HydroPod ฟรี\n`;
@@ -2368,7 +2358,8 @@ Geotextile ${it.grade}g (${it.unit} บาท/ตร.ม.)
     }
 
     const hydroQty = hydroItems.reduce((s, it) => s + it.q, 0);
-    const hydroQtyDiscount = hydroItems.length > 0 ? calcCircularDiscount(hydroQty) : 0;
+    const hydroDiscRate = hydroItems.length > 0 ? calcCircularDiscount(hydroQty) : 0;
+    const hydroQtyDiscount = hydroDiscRate > 0 ? Math.floor(hydroTotal * hydroDiscRate / 100) : 0;
     const hydroNetTotal = Math.max(0, hydroTotal - hydroQtyDiscount);
     const hydroShipResult = hydroItems.length > 0 ? calcCircularShipping(hydroDistanceKm) : { shipping: 0, note: '' };
     const hydroShip = hydroShipResult.shipping;
@@ -2420,12 +2411,12 @@ Geotextile ${it.grade}g (${it.unit} บาท/ตร.ม.)
     updateSummaryAdminAlert(adminNotes);
 
     const customerText = buildCustomerText({
-      cust, list, geoText, hydroText, hydroNetTotal, hydroQtyDiscount, hydroShip, hydroQty,
+      cust, list, geoText, hydroText, hydroNetTotal, hydroQtyDiscount, hydroDiscRate, hydroShip, hydroQty,
       fullItems, discountAmount, netItems, ship, grand, dep, bal, summaryDiscRate
     });
 
     const adminText = buildAdminText({
-      cust, list, geoText, hydroText, hydroNetTotal, hydroQtyDiscount, hydroShip, hydroQty,
+      cust, list, geoText, hydroText, hydroNetTotal, hydroQtyDiscount, hydroDiscRate, hydroShip, hydroQty,
       fullItems, discountAmount, netItems, ship, grand, dep, bal,
       weightKgSum, page, admin, summaryRoundClothChecked, summaryDiscRate
     });
