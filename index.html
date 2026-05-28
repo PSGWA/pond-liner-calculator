@@ -535,6 +535,7 @@
 <div class="hint">
   ✅ เลือกได้ 2 แบบ: LDPE 0.5 (จับจีบ) หรือ HDPE 0.75 (จับจีบ)<br>
   ✅ เงื่อนไขค่าจัดส่งบ่อกลม<br>
+  • <b>ซื้อ 4 บ่อขึ้นไป ฟรีค่าส่งทุกระยะทาง</b><br>
   • ฟรีจัดส่งไม่เกิน 200 กม. จากโรงงาน<br>
   • 201–400 กม. = 3,500 บาท<br>
   • 401–600 กม. = 6,000 บาท<br>
@@ -542,8 +543,8 @@
   • เกิน 800 กม. = คิดค่าจัดส่งตามจริง<br>
   ✅ โปรส่วนลด:<br>
   • ซื้อ 2–3 บ่อ ลด 10%<br>
-  • ซื้อ 4–5 บ่อ ลด 15%<br>
-  • ซื้อ 6 บ่อขึ้นไป ลด 20%<br>
+  • ซื้อ 4–5 บ่อ ลด 15% + ฟรีค่าส่ง<br>
+  • ซื้อ 6 บ่อขึ้นไป ลด 20% + ฟรีค่าส่ง<br>
   ⚠️ พื้นที่พิเศษ เช่น เกาะ ดอย ชายแดน หรือพื้นที่เข้าถึงยาก อาจมีค่าใช้จ่ายเพิ่มเติมตามจริง
 </div>
 
@@ -754,8 +755,6 @@
       <div class="hint">
         ระบบจะสรุปเป็น “ม้วนหน้ากว้าง 2 เมตร” ให้อัตโนมัติ (2xความยาว) • เพิ่มได้หลายรายการ
       </div>
-
-      <label><input type="checkbox" id="summaryDiscount10"> ส่วนลด 10% (โปรรีวิว ผ้า + Geo)</label>
 
       <hr style="opacity:.25; margin:16px 0">
 
@@ -1541,9 +1540,10 @@ circularForm.onsubmit = function(e){
   const disc3Amt = applyDisc3 ? Math.floor(afterDiscount * 0.03) : 0;
   const afterDiscount3 = afterDiscount - disc3Amt;
 
+  const freeShipByQty = totalQty >= 4;
   const shipInfo = calcCircularShipping(distanceKm);
-  const shipping = shipInfo.shipping;
-  const isActualShipping = distanceKm > 800;
+  const shipping = freeShipByQty ? 0 : shipInfo.shipping;
+  const isActualShipping = !freeShipByQty && distanceKm > 800;
 
   let out = `📍 รายการสั่งซื้อ\n`;
 
@@ -1563,8 +1563,13 @@ circularForm.onsubmit = function(e){
     out += `ส่วนลด 3% = -${fmt(disc3Amt)} บาท\n`;
   }
 
-  if(isActualShipping){
+  if(freeShipByQty){
+    out += `ค่าส่ง ฟรี! (ซื้อ ${totalQty} บ่อ)\n`;
+  } else {
     out += `ระยะทาง ${fmt(distanceKm)} กม.\n`;
+  }
+
+  if(isActualShipping){
     out += `ค่าส่ง คิดตามจริง\n`;
     out += `ยอดรวมสุทธิ รอแจ้งค่าส่งจริง\n\n`;
     out += `หมายเหตุ: พื้นที่พิเศษ เช่น เกาะ ดอย ชายแดน หรือพื้นที่เข้าถึงยาก อาจมีค่าใช้จ่ายเพิ่มเติมตามจริง\n\n`;
@@ -1575,8 +1580,7 @@ circularForm.onsubmit = function(e){
     const deposit = Math.floor(grandTotal * 0.20);
     const cod = grandTotal - deposit;
 
-    out += `ระยะทาง ${fmt(distanceKm)} กม.\n`;
-    out += `ค่าส่ง ${fmt(shipping)} บาท\n`;
+    if(!freeShipByQty) out += `ค่าส่ง ${fmt(shipping)} บาท\n`;
     out += `ยอดรวมสุทธิ ${fmt(grandTotal)} บาท\n\n`;
 
     out += `✅ ชำระมัดจำ 20% = ${fmt(deposit)} บาท\n`;
@@ -2248,7 +2252,6 @@ out += `\n\nรวมยอดทั้งหมด (${totalLabel}) ${grand.toLo
     const MAT = c => c.endsWith('L') ? 'LDPE' : 'HDPE';
     const THK = c => c.replace(/[LH]$/, '');
     const geoItems = collectGeoSummaryItems();
-    const useDiscount10 = document.getElementById('summaryDiscount10').checked;
 
     let total=0, areaSum=0, weightKgSum=0, plasticKgSum=0, list='', idx=1;
     const adminNotes = [];
@@ -2372,18 +2375,10 @@ Geotextile ${it.grade}g (${it.unit} บาท/ตร.ม.)
     const itemsTotal = total;
     const geoTotalSafe = geoTotal || 0;
 
-    const geoCoverageRatio = areaSum > 0 ? (geoArea / areaSum) : 0;
-    const discount10Eligible = !!(useDiscount10 && itemsTotal > 0 && geoTotalSafe > 0 && geoCoverageRatio >= 0.69);
-
     let discountAmount = 0;
     let summaryDiscRate = 0;
 
-    if (discount10Eligible) {
-      discountAmount = Math.floor((itemsTotal + geoTotalSafe) * 0.10);
-      summaryDiscRate = 10;
-    } else if (useDiscount10 && itemsTotal > 0 && geoTotalSafe > 0) {
-      adminNotes.push(`โปรรีวิว 10% + Geo ใช้ไม่ได้ เพราะ Geo คิดเป็น ${(geoCoverageRatio * 100).toFixed(1)}% ของพื้นที่ผ้า`);
-    } else if (useDiscount3) {
+    if (useDiscount3) {
       discountAmount = Math.floor((itemsTotal + geoTotalSafe) * 0.03);
       summaryDiscRate = 3;
     }
