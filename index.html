@@ -1548,9 +1548,10 @@ circularForm.onsubmit = function(e){
   const afterDiscount3 = afterDiscount - disc3Amt;
 
   const freeShipByQty = totalQty >= 4;
+  const isSpecialArea = document.getElementById('circularSpecialArea')?.checked;
   const shipInfo = calcCircularShipping(distanceKm);
-  const shipping = freeShipByQty ? 0 : shipInfo.shipping;
-  const specialAreaFee = !freeShipByQty && document.getElementById('circularSpecialArea')?.checked ? 15000 : 0;
+  const shipping = (freeShipByQty || isSpecialArea) ? 0 : shipInfo.shipping;
+  const specialAreaFee = !freeShipByQty && isSpecialArea ? 15000 : 0;
 
   let out = `📍 รายการสั่งซื้อ\n`;
 
@@ -2367,8 +2368,9 @@ Geotextile ${it.grade}g (${it.unit} บาท/ตร.ม.)
     const hydroNetTotal = Math.max(0, hydroTotal - hydroQtyDiscount);
     const hydroShipResult = hydroItems.length > 0 ? calcCircularShipping(hydroDistanceKm) : { shipping: 0, note: '' };
     const hydroFreeShipByQty = hydroQty >= 4;
-    const hydroShip = hydroFreeShipByQty ? 0 : hydroShipResult.shipping;
-    const hydroSpecialAreaFee = hydroItems.length > 0 && !hydroFreeShipByQty && document.getElementById('hydroSpecialAreaSummary')?.checked ? 15000 : 0;
+    const isHydroSpecialArea = document.getElementById('hydroSpecialAreaSummary')?.checked;
+    const hydroShip = (hydroFreeShipByQty || isHydroSpecialArea) ? 0 : hydroShipResult.shipping;
+    const hydroSpecialAreaFee = hydroItems.length > 0 && !hydroFreeShipByQty && isHydroSpecialArea ? 15000 : 0;
 
     if (total === 0 && geoTotal === 0 && hydroTotal === 0) {
       alert('กรุณากรอกอย่างน้อย 1 รายการ (ผ้า, Geotextile หรือ HydroPod)');
