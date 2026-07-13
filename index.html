@@ -546,10 +546,10 @@
   • ซื้อ 2–3 บ่อ ลด 10%<br>
   • ซื้อ 4–5 บ่อ ลด 15% + ฟรีค่าส่ง<br>
   • ซื้อ 6 บ่อขึ้นไป ลด 20% + ฟรีค่าส่ง<br>
-  ⚠️ พื้นที่พิเศษ เกาะ/ดอย/ชายแดน ค่าเดินทาง 15,000 บาท
+  ⚠️ พื้นที่พิเศษ เกาะ/ดอย/ชายแดน ค่าเดินทาง 15,000 บาท (ซื้อ 4 บ่อขึ้นไป ฟรี)
 </div>
 
-      <label><input type="checkbox" id="circularSpecialArea"> เกาะ / ดอย / ชายแดน ค่าเดินทาง 15,000 บาท</label>
+      <label><input type="checkbox" id="circularSpecialArea"> เกาะ / ดอย / ชายแดน ค่าเดินทาง 15,000 บาท (ซื้อ 4 บ่อขึ้นไป ฟรี)</label>
       <label><input type="checkbox" id="circularDiscount3"> ส่วนลด 3% (เฉพาะค่าสินค้า)</label>
 
       <button type="submit" class="btn-primary" style="margin-top:12px">สรุปออเดอร์บ่อกลม</button>
@@ -781,8 +781,8 @@
         <label style="margin:0; white-space:nowrap">ระยะทางจัดส่ง HydroPod (กม.):</label>
         <input type="number" id="hydroDistanceSummary" min="0" step="1" placeholder="เช่น 150" style="width:130px">
       </div>
-      <label><input type="checkbox" id="hydroSpecialAreaSummary"> เกาะ / ดอย / ชายแดน ค่าเดินทาง 15,000 บาท</label>
-      <div class="hint">ส่วนลดตามจำนวน HydroPod: 2–3 บ่อ ลด 10% / 4–5 บ่อ ลด 15% / 6+ บ่อ ลด 20% • ฟรีค่าส่ง ≤200 กม. • 801–900 กม. = 12,000 บาท • 901 กม.ขึ้นไป = 15,000 บาท</div>
+      <label><input type="checkbox" id="hydroSpecialAreaSummary"> เกาะ / ดอย / ชายแดน ค่าเดินทาง 15,000 บาท (ซื้อ 4 บ่อขึ้นไป ฟรี)</label>
+      <div class="hint">ส่วนลดตามจำนวน HydroPod: 2–3 บ่อ ลด 10% / 4–5 บ่อ ลด 15% / 6+ บ่อ ลด 20% • ซื้อ 4 บ่อขึ้นไป ฟรีค่าส่งและค่าเดินทางพื้นที่พิเศษ • ฟรีค่าส่ง ≤200 กม. • 801–900 กม. = 12,000 บาท • 901 กม.ขึ้นไป = 15,000 บาท</div>
 
       <label>เลือกเพจ</label>
       <select id="pageSelect">
@@ -1018,6 +1018,13 @@ function getSummaryPriceMap(){
   }
 
   const tabs = document.querySelectorAll('.tab');
+  ['pondDiscount3','canalDiscount3','circularDiscount3','flatbarDiscount3','summaryDiscount3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.defaultChecked = false;
+      el.checked = false;
+    }
+  });
   const sections = {
     pond:'pondContainer',
     canal:'canalContainer',
@@ -1522,14 +1529,13 @@ circularForm.onsubmit = function(e){
     const lineTotal = it.unitPrice * it.q;
     fullTotal += lineTotal;
 
-    const mmText = it.mat === 'ldpe05' ? 'LDPE 0.5 มม.' : 'HDPE 0.75 มม.';
+    const mmText = it.mat === 'ldpe05' ? 'LDPE หนา 0.5 มม.' : 'HDPE หนา 0.75 มม.';
 
     listText +=
 `บ่อกลม HydroPod ผ้า ${mmText}
 สูง ${it.h} ม. เส้นผ่านศูนย์กลาง ${it.d} ม.
 ความจุประมาณ ${fmt(it.volume)} ลิตร
 ราคา ${fmt(it.unitPrice)} บาท จำนวน ${it.q} บ่อ
-
 `;
   }
 
@@ -1544,7 +1550,7 @@ circularForm.onsubmit = function(e){
   const freeShipByQty = totalQty >= 4;
   const shipInfo = calcCircularShipping(distanceKm);
   const shipping = freeShipByQty ? 0 : shipInfo.shipping;
-  const specialAreaFee = document.getElementById('circularSpecialArea')?.checked ? 15000 : 0;
+  const specialAreaFee = !freeShipByQty && document.getElementById('circularSpecialArea')?.checked ? 15000 : 0;
 
   let out = `📍 รายการสั่งซื้อ\n`;
 
@@ -1553,8 +1559,6 @@ circularForm.onsubmit = function(e){
   }
 
   out += listText;
-  out += `📌 สรุปยอดสั่งซื้อทั้งหมด\n`;
-  out += `ยอดเต็ม ${fmt(fullTotal)} บาท\n`;
 
   if(discount > 0){
     out += `ส่วนลด ${discRate}% (${totalQty} บ่อ) = -${fmt(discount)} บาท\n`;
@@ -1564,14 +1568,10 @@ circularForm.onsubmit = function(e){
     out += `ส่วนลด 3% = -${fmt(disc3Amt)} บาท\n`;
   }
 
-  if(freeShipByQty){
-    out += `ค่าส่ง ฟรี! (ซื้อ ${totalQty} บ่อ)\n`;
-  } else {
-    out += `ระยะทาง ${fmt(distanceKm)} กม.\n`;
-  }
+  out += `ระยะทาง ${fmt(distanceKm)} กม.\n`;
 
   if(specialAreaFee > 0){
-    out += `ค่าเดินทางพื้นที่เกาะ/ดอย/ชายแดน ${fmt(specialAreaFee)} บาท\n`;
+    out += `ค่าเดินทาง +ที่พักช่าง พื้นที่พิเศษ (เกาะ/ดอย/ชายแดน) ${fmt(specialAreaFee)} บาท\n`;
   }
 
   {
@@ -1579,8 +1579,8 @@ circularForm.onsubmit = function(e){
     const deposit = Math.floor(grandTotal * 0.20);
     const cod = grandTotal - deposit;
 
-    if(!freeShipByQty) out += `ค่าส่ง ${fmt(shipping)} บาท\n`;
-    out += `ยอดรวมสุทธิ ${fmt(grandTotal)} บาท\n\n`;
+    if(!freeShipByQty && shipping > 0) out += `ค่าจัดส่ง ${fmt(shipping)} บาท\n`;
+    out += `\n📌ยอดรวมสุทธิ ${fmt(grandTotal)} บาท\n\n`;
 
     out += `✅ ชำระมัดจำ 20% = ${fmt(deposit)} บาท\n`;
     out += `✅ ยอดคงเหลือ ${fmt(cod)} บาท ชำระเมื่อติดตั้งเสร็จ\n\n`;
@@ -2062,7 +2062,7 @@ out += `\n\nรวมยอดทั้งหมด (${totalLabel}) ${grand.toLo
         out += `ยอดสุทธิ HydroPod ${fmt(hydroNetTotal)} บาท\n`;
       }
       out += hydroShip > 0 ? `ค่าจัดส่ง HydroPod ${fmt(hydroShip)} บาท\n` : `ค่าจัดส่ง HydroPod ฟรี\n`;
-      if(hydroSpecialAreaFee > 0) out += `ค่าเดินทางพื้นที่เกาะ/ดอย/ชายแดน ${fmt(hydroSpecialAreaFee)} บาท\n`;
+      if(hydroSpecialAreaFee > 0) out += `ค่าเดินทาง +ที่พักช่าง พื้นที่พิเศษ (เกาะ/ดอย/ชายแดน) ${fmt(hydroSpecialAreaFee)} บาท\n`;
     }
 
     out += `ยอดรวม ${Math.floor(grand).toLocaleString()} บาท\n`;
@@ -2099,7 +2099,7 @@ out += `\n\nรวมยอดทั้งหมด (${totalLabel}) ${grand.toLo
         out += `ยอดสุทธิ HydroPod ${fmt(hydroNetTotal)} บาท\n`;
       }
       out += hydroShip > 0 ? `ค่าจัดส่ง HydroPod ${fmt(hydroShip)} บาท\n` : `ค่าจัดส่ง HydroPod ฟรี\n`;
-      if(hydroSpecialAreaFee > 0) out += `ค่าเดินทางพื้นที่เกาะ/ดอย/ชายแดน ${fmt(hydroSpecialAreaFee)} บาท\n`;
+      if(hydroSpecialAreaFee > 0) out += `ค่าเดินทาง +ที่พักช่าง พื้นที่พิเศษ (เกาะ/ดอย/ชายแดน) ${fmt(hydroSpecialAreaFee)} บาท\n`;
     }
 
     out += `📌 สรุปยอดสั่งซื้อทั้งหมด\nยอดรวม ${Math.floor(grand).toLocaleString()} บาท\n`;
@@ -2349,7 +2349,7 @@ Geotextile ${it.grade}g (${it.unit} บาท/ตร.ม.)
     for (const it of hydroItems) {
       const lineTotal = it.unitPrice * it.q;
       hydroTotal += lineTotal;
-      const mmText = it.mat === 'ldpe05' ? 'LDPE 0.5 มม.' : 'HDPE 0.75 มม.';
+      const mmText = it.mat === 'ldpe05' ? 'LDPE หนา 0.5 มม.' : 'HDPE หนา 0.75 มม.';
       hydroText +=
 `📍 รายการ HydroPod ${hydroIdx}:
 บ่อกลม HydroPod ผ้า ${mmText}
@@ -2366,8 +2366,9 @@ Geotextile ${it.grade}g (${it.unit} บาท/ตร.ม.)
     const hydroQtyDiscount = hydroDiscRate > 0 ? Math.floor(hydroTotal * hydroDiscRate / 100) : 0;
     const hydroNetTotal = Math.max(0, hydroTotal - hydroQtyDiscount);
     const hydroShipResult = hydroItems.length > 0 ? calcCircularShipping(hydroDistanceKm) : { shipping: 0, note: '' };
-    const hydroShip = hydroShipResult.shipping;
-    const hydroSpecialAreaFee = hydroItems.length > 0 && document.getElementById('hydroSpecialAreaSummary')?.checked ? 15000 : 0;
+    const hydroFreeShipByQty = hydroQty >= 4;
+    const hydroShip = hydroFreeShipByQty ? 0 : hydroShipResult.shipping;
+    const hydroSpecialAreaFee = hydroItems.length > 0 && !hydroFreeShipByQty && document.getElementById('hydroSpecialAreaSummary')?.checked ? 15000 : 0;
 
     if (total === 0 && geoTotal === 0 && hydroTotal === 0) {
       alert('กรุณากรอกอย่างน้อย 1 รายการ (ผ้า, Geotextile หรือ HydroPod)');
